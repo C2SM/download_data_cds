@@ -5,8 +5,9 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='2t'
-startyr=1985
+var='skt'
+long_name='skin_temperature'
+startyr=1986
 endyr=2021
 archive=f'/net/atmos/data/cerra/original/{var}'
 
@@ -18,7 +19,7 @@ for year in range(startyr, endyr+1):
         'reanalysis-cerra-single-levels',
         {
             'format': 'grib',
-            'variable': '2m_temperature',
+            'variable': f'{long_name}',
             'level_type': 'surface_or_atmosphere',
             'data_type': 'reanalysis',
             'product_type': 'analysis',

@@ -5,7 +5,8 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='2t'
+var='eva'
+long_name='evaporation'
 startyr=1985
 endyr=2021
 archive=f'/net/atmos/data/cerra/original/{var}'
@@ -18,10 +19,10 @@ for year in range(startyr, endyr+1):
         'reanalysis-cerra-single-levels',
         {
             'format': 'grib',
-            'variable': '2m_temperature',
+            'variable': f'{long_name}',
             'level_type': 'surface_or_atmosphere',
             'data_type': 'reanalysis',
-            'product_type': 'analysis',
+            'product_type': 'forecast',
             'year': f'{year}',
             'month': [
                 '01', '02', '03',
@@ -47,6 +48,7 @@ for year in range(startyr, endyr+1):
                 '09:00', '12:00', '15:00',
                 '18:00', '21:00',
             ],
+            'leadtime_hour': '3',
         },
         f'{archive}/{var}_3hr_cerra_{year}.grib')
 
