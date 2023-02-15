@@ -4,7 +4,8 @@ import os
 import cdsapi
 
 var='t'
-startyr=2018
+long_name='temperature'
+startyr=1985
 endyr=2021
 path=f'/net/atmos/data/cerra/original/{var}'
 
@@ -20,7 +21,7 @@ for year in range(startyr, endyr+1):
         'reanalysis-cerra-pressure-levels',
         {
             'format': 'grib',
-            'variable': 'temperature',
+            'variable': f'{long_name}',
             'pressure_level': [
                  '1', '2', '3',
                  '5', '7', '10',
