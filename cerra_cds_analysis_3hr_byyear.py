@@ -5,8 +5,8 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='10si'
-long_name='10m_wind_speed'
+var='r'
+long_name='2m_relative_humidity'
 startyr=1985
 endyr=2021
 archive=f'/net/atmos/data/cerra/original/{var}'

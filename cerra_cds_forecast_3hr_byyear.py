@@ -5,8 +5,8 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var=''
-long_name=''
+var='str'
+long_name='surface_net_thermal_radiation'
 startyr=1985
 endyr=2021
 archive=f'/net/atmos/data/cerra/original/{var}'

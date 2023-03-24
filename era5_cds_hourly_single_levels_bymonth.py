@@ -5,9 +5,9 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='100v'
-oldname='var247'
-long_name='100m_v_component_of_wind'
+var='2t'
+oldname='var167'
+long_name='2m_temperature'
 startyr=1940
 endyr=2022
 path=f'/net/atmos/data/ERA5/original/{var}/1hr/'
