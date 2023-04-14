@@ -5,9 +5,9 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='2t'
-oldname='var167'
-long_name='2m_temperature'
+var='tp'
+oldname='var228'
+long_name='total_precipitation'
 startyr=1940
 endyr=2022
 path=f'/net/atmos/data/ERA5/original/{var}/1hr/'
