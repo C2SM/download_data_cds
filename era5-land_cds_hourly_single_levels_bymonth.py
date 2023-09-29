@@ -5,9 +5,10 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='sd'
-oldname='var141'
-long_name='snow_depth_water_equivalent'
+var='swvl2'
+oldname='var40'
+long_name='volumetric_soil_water_layer_2'
+units='m**3 m**-3'
 startyr=1950
 endyr=2022
 path=f'/net/atmos/data/era5-land_cds/original/{var}/1hr/'
@@ -51,5 +52,7 @@ for year in range(startyr, endyr+1):
             f'{archive}/{oldname}_1hr_era5-land_{year}{month}.grib')
 
         os.system(f'cdo -f nc copy {archive}/{oldname}_1hr_era5-land_{year}{month}.grib {archive}/{oldname}_1hr_era5-land_{year}{month}.nc')
-        os.system(f'cdo chname,{oldname},{var} {archive}/{oldname}_1hr_era5-land_{year}{month}.nc {archive}/{var}_1hr_era5-land_{year}{month}.nc')
-        os.system(f'rm {archive}/{oldname}_1hr_era5-land_{year}{month}.*')
+        os.system(f'ncatted -O -a standard_name,{oldname},c,c,{long_name} {archive}/{oldname}_1hr_era5-land_{year}{month}.nc {archive}/{oldname}_1hr_era5-land_{year}{month}_ncatted.nc')
+        os.system(f'ncatted -O -a units,{oldname},c,c,"{units}" {archive}/{oldname}_1hr_era5-land_{year}{month}_ncatted.nc {archive}/{oldname}_1hr_era5-land_{year}{month}_ncatted2.nc')
+        os.system(f'cdo chname,{oldname},{var} {archive}/{oldname}_1hr_era5-land_{year}{month}_ncatted2.nc {archive}/{var}_1hr_era5-land_{year}{month}.nc')
+        os.system(f'rm {archive}/{oldname}_1hr_era5-land_{year}{month}*')
