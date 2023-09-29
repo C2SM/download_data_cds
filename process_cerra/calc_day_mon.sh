@@ -2,7 +2,7 @@
 # File Name: calc_day_mon.sh
 # Author: ruth.lorenz@c2sm.ethz.ch 
 # Created: 13/01/22
-# Modified: Fri Apr 14 10:39:41 2023
+# Modified: Fri Jul 14 17:42:01 2023
 # Purpose : calculate daily and monthly means, sums, etc.
 #           from original 3hr data
 
@@ -20,13 +20,13 @@ module load cdo
 ##---------------------##
 ## user specifications ##
 ##-------------------- ##
-data="cerra-land"
-variable="sshf"
+data="cerra"
+variable="gph500"
 # aggregation method, depends on variable (mean, sum, max, min)
-agg_method="sum"
+agg_method="mean"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 21:00:00 to 24:00:00"
-product_type="forecast"
+product_type="analysis"
 
 ## years which need to be processed
 syear=1985

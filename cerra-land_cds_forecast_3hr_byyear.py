@@ -3,8 +3,8 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='slhf'
-long_name='surface_latent_heat_flux'
+var='strd'
+long_name='surface_thermal_radiation_downwards'
 startyr=1985
 endyr=2021
 archive=f'/net/atmos/data/cerra-land/original/{var}'

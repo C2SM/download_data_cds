@@ -3,9 +3,9 @@
 import os
 import cdsapi
 
-var='t'
-long_name='temperature'
-startyr=1985
+var='v'
+long_name='v_component_of_wind'
+startyr=2019
 endyr=2021
 path=f'/net/atmos/data/cerra/original/{var}'
 

@@ -5,12 +5,13 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='tp'
-oldname='var228'
-long_name='total_precipitation'
-startyr=1940
+var='2t'
+oldname='var167'
+long_name='2m_temperature'
+units='K'
+startyr=2022
 endyr=2022
-path=f'/net/atmos/data/ERA5/original/{var}/1hr/'
+path=f'/net/atmos/data/era5_cds/original/{var}/1hr/'
 
 for year in range(startyr, endyr+1):
     for month in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']:
@@ -52,5 +53,7 @@ for year in range(startyr, endyr+1):
         f'{archive}/{oldname}_1hr_era5_{year}{month}.grib')
 
         os.system(f'cdo -f nc copy {archive}/{oldname}_1hr_era5_{year}{month}.grib {archive}/{oldname}_1hr_era5_{year}{month}.nc')
-        os.system(f'cdo chname,{oldname},{var} {archive}/{oldname}_1hr_era5_{year}{month}.nc {archive}/{var}_1hr_era5_{year}{month}.nc')
-        os.system(f'rm {archive}/{oldname}_1hr_era5_{year}{month}.*')
+        os.system(f'ncatted -a standard_name,{oldname},c,c,{long_name} {archive}/{oldname}_1hr_era5_{year}{month}.nc {archive}/{oldname}_1hr_era5_{year}{month}_ncatted.nc')
+        os.system(f'ncatted -a units,{oldname},c,c,{units} {archive}/{oldname}_1hr_era5_{year}{month}_ncatted.nc {archive}/{oldname}_1hr_era5_{year}{month}_ncatted2.nc')
+        os.system(f'cdo setname,{var} {archive}/{oldname}_1hr_era5_{year}{month}.nc {archive}/{var}_1hr_era5_{year}{month}.nc')
+        os.system(f'rm {archive}/{oldname}_1hr_era5_{year}{month}*')
