@@ -45,8 +45,8 @@ do
     echo "Processing variable $VARI, $product_type, with aggregation method $agg_method."
     workdir=${outdir}/work/${VARI}
     ## create directories if do not exist yet
-    mkdir -p ${outdir}/${VARI}/day/native
-    mkdir -p ${outdir}/${VARI}/mon/native
+    mkdir -p ${outdir}/${variable_out}/day/native
+    mkdir -p ${outdir}/${variable_out}/mon/native
     mkdir -p ${workdir}
 
     for YEAR in $(seq ${syear} ${eyear})
