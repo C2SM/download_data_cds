@@ -3,5 +3,6 @@ test_*.py
 
 *.grib
 *.nc
+.idea
 
 */logfiles/*
