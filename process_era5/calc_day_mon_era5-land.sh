@@ -22,14 +22,14 @@ module load cdo
 ##-------------------- ##
 DATA="era5-land_cds"
 data="era5-land"
-variable="swvl1"
-long_name="soil water layer 1"
-unit="m**3 m**-3"
+variable="snom"
+long_name="snowmelt"
+unit="m of water equivalent"
 # aggregation method, depends on variable (mean, sum, max, min, inst)
-agg_method="mean"
+agg_method="inst"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
-product_type="analysis"
+product_type="forecast"
 
 ## years which need to be processed
 syear=1950
@@ -122,8 +122,8 @@ do
             fi
         done
         cdo mergetime ${workdir}/${VARI}_day_${data}_${YEAR}??.nc ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc
-        ncatted -a standard_name,${VARI},c,c,${long_name} ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc
-        ncatted -O -a units,${VARI},c,c,${unit} ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc ${name_day}
+        ncatted -a standard_name,${VARI},c,c,"${long_name}" ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc
+        ncatted -O -a units,${VARI},c,c,"${unit}" ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc ${name_day}
 
 
         if [ ${agg_method} = "mean" ] || [ ${agg_method} = "inst" ]; then
