@@ -5,16 +5,17 @@ import cdsapi
 
 c = cdsapi.Client()
 
-var='swvl2'
-oldname='var40'
-long_name='volumetric_soil_water_layer_2'
-units='m**3 m**-3'
-startyr=1950
-endyr=2022
+var='snom'
+oldname='var45'
+long_name='snowmelt'
+units='m'
+startyr=2023
+endyr=2023
+month_list = ['01', '02', '03', '04', '05', '06', '07', '08', '09']
 path=f'/net/atmos/data/era5-land_cds/original/{var}/1hr/'
 
 for year in range(startyr, endyr+1):
-    for month in ['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']:
+    for month in month_list:
         archive=f'{path}/{year}'
         if (os.access(archive, os.F_OK) == False):
             os.makedirs(archive)   
