@@ -8,7 +8,7 @@
 
 ###-------------------------------------------------------
 printf -v date '%(%Y-%m-%d_%H%M%S)T' -1
-logfile="calc_day_mon_$date.log"
+logfile="calc_day_mon_era5_$date.log"
 {
 ##-----------------------##
 ## load required modules ##
@@ -59,11 +59,14 @@ do
         for MONTH in $(seq -w 01 12)
         do
             echo $MONTH
+
             name_day_work=${workdir}/${VARI}_day_${data}_${YEAR}${MONTH}.nc
 
-            name_in1=${archive}/original/${VARI}/1hr/${YEAR}/${MONTH}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
+            name_in1=${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
             tmp=${workdir}/tmpfile_${YEAR}${MONTH}.nc
 
+            # first need to concatenate all days in month
+            cdo mergetime ${archive}/original/${VARI}/1hr/${YEAR}/${MONTH}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc ${name_in1}
 
             if [[ ${product_type} = "forecast" ]]; then
                 # -> last timestep is next day 00:00:00 and contains data from day before
@@ -77,13 +80,13 @@ do
                     MONTH2=$(printf "%02d" $NEWMONTH)
                 fi                
 
-                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
+                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
                 # extract first timestep from next day and concatenate with day before
                 cdo seltimestep,1,1 ${name_in2} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
-                cdo mergetime ${name_in1} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
+                cdo mergetime ${name_in1} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_all.nc
                 #rm ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
 
-                cdo shifttime,-1sec ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc
+                cdo shifttime,-1sec ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_all.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc
                 if [ ${YEAR} -eq 1940 ] && [ ${MONTH} -eq 01 ]; then
                     # for the first year January data starts at 6:00:00, so no need to cut the first hour
                     cp ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
@@ -91,8 +94,7 @@ do
                     ncks -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 fi
 
-                rm ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
-                rm ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc
+                #rm ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc
             else
                 cp ${name_in1} ${tmp}
             fi
