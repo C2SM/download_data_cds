@@ -1,0 +1,34 @@
+{ 
+  "---------" : ["---------------------------------------------------" , "-------------" , "-------" , "-------" , "--" , "--" ], 
+  "ShortName" : ["VariableNameInCDS                                  " , "Units"         , "ParamID" , "LevType" , "An" , "Fc" ],
+  "---------" : ["---------------------------------------------------" , "-------------" , "-------" , "-------" , "--" , "--" ], 
+  "sst"       : ["sea_surface_temperature"                             , "K"             , "34"      , "sfc"     , "1"  , "1"  ],
+  "msl"       : ["mean_sea_level_pressure"                             , "Pa"            , "151"     , "sfc"     , "1"  , "1"  ],
+  "tcc"       : ["total_cloud_cover"                                   , "(0 - 1)"       , "164"     , "sfc"     , "1"  , "1"  ],
+  "u10"       : ["10m_u_component_of_wind"                             , "m s-1"         , "165"     , "sfc"     , "1"  , "1"  ],
+  "v10"       : ["10m_v_component_of_wind"                             , "m s-1"         , "166"     , "sfc"     , "1"  , "1"  ],
+  "t2m"       : ["2m_temperature"                                      , "K"             , "167"     , "sfc"     , "1"  , "1"  ],
+  "d2m"       : ["2m_dewpoint_temperature"                             , "K"             , "168"     , "sfc"     , "1"  , "1"  ],
+  "sp"        : ["surface_pressure"                                    , "Pa"            , "134"     , "sfc"     , "1"  , "1"  ],
+  "---------" : ["---------------------------------------------------" , "-------------" , "-------" , "-------" , "--" , "--" ], 
+  "strd"      : ["surface_thermal_radiation_downwards"                 , "J m-2"         , "175"     , "sfc"     , "0"  , "1"  ],
+  "ssrd"      : ["surface_solar_radiation_downwards"                   , "J m-2"         , "169"     , "sfc"     , "0"  , "1"  ],
+  "ssr"       : ["surface_net_solar_radiation"                         , "J m-2"         , "176"     , "sfc"     , "0"  , "1"  ],
+  "str"       : ["surface_net_thermal_radiation"                       , "J m-2"         , "177"     , "sfc"     , "0"  , "1"  ],
+  "e"         : ["evaporation"                                         , "m"             , "182"     , "sfc"     , "0"  , "1"  ],
+  "tp"        : ["total_precipitation"                                 , "m"             , "228"     , "sfc"     , "0"  , "1"  ],
+  "cbh"       : ["cloud_base_height"                                   , "m"             , "228023"  , "sfc"     , "0"  , "1"  ],
+  "---------" : ["---------------------------------------------------" , "-------------" , "-------" , "-------" , "--" , "--" ], 
+  "q"         : ["specific_humidity"                                   , "kg kg-1"       , "133"     , "pl"      , "1"  , "1"  ],
+  "r"         : ["relative_humidity"                                   , "%"             , "157"     , "pl"      , "1"  , "1"  ],
+  "t"         : ["temperature"                                         , "K"             , "130"     , "pl"      , "1"  , "1"  ],
+  "u"         : ["u_component_of_wind"                                 , "m s-1"         , "131"     , "pl"      , "1"  , "1"  ],
+  "v"         : ["v_component_of_wind"                                 , "m s-1"         , "132"     , "pl"      , "1"  , "1"  ],
+  "cc"        : ["fraction_of_cloud_cover"                             , "(0 - 1)"       , "248"     , "pl"      , "1"  , "1"  ],
+  "z"         : ["geopotential"                                        , "m2 s-2"        , "129"     , "pl"      , "1"  , "1"  ]
+}
+
+
+
+
+
