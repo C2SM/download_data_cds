@@ -87,15 +87,16 @@ do
         done
         # concatenate all days per month
         ncrcat ${workdir}/${variable_out}_day_${YEAR}${MONTH}*.nc  ${name_day}
-    done
 
-    if [[ $agg_method == "mean" ]]
-    then
-        cdo monmean ${name_day} ${name_mon}
-    else
-        echo "aggregation method $agg_method not implemented."
-        exit
-    fi        
+        if [[ $agg_method == "mean" ]]
+        then
+            cdo monmean ${name_day} ${name_mon}
+        else
+            echo "aggregation method $agg_method not implemented."
+            exit
+        fi
+    done
+   
 done
 
 }
