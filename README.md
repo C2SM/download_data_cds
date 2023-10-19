@@ -25,3 +25,4 @@ CERRA-Land: https://docs.google.com/spreadsheets/d/1e58ps_yBmxUG0jvL8ZmNNr7Zz_UX
 ERA5: https://docs.google.com/spreadsheets/d/1HbKCZ4lV_ZkIcy1t7AtO3HGj7QzlpCKPmH8NpyA9IuM/edit?usp=sharing
 ERA5-Land: https://docs.google.com/spreadsheets/d/1ViB3aCHzP2zmjjd7_U3j7RULcITuUrXto073TJi-Kfg/edit?usp=sharing
 
+ERA5 v2: https://www.polybox.ethz.ch/index.php/apps/richdocuments/index?fileId=3445369909&dir=%2FData_Management%2FERA5_WSL
