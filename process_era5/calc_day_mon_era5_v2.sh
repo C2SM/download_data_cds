@@ -53,12 +53,11 @@ do
     do
         echo $YEAR
 
-        name_mon=${outdir}/${variable_out}/mon/native/${variable_out}_mon_${data}_${YEAR}.nc
-        name_day=${outdir}/${variable_out}/day/native/${variable_out}_day_${data}_${YEAR}.nc
-
         for MONTH in $(seq -w 01 12)
         do
             echo $MONTH
+            name_mon=${outdir}/${variable_out}/mon/native/${variable_out}_mon_${data_in}_${YEAR}${MONTH}.nc
+            name_day=${outdir}/${variable_out}/day/native/${variable_out}_day_${data_in}_${YEAR}${MONTH}.nc
 
             name_day_work=${workdir}/${VARI}_day_${data}_${YEAR}${MONTH}.nc
 
@@ -118,18 +117,19 @@ do
             elif [ ${agg_method} = "min" ]; then
                 cdo daymin ${tmp} ${name_day_work}  
             fi
-            cdo chname,${VARI},${variable_out} ${name_day_work} ${workdir}/${variable_out}_day_${data}_${YEAR}${MONTH}.nc
+            cdo chname,${VARI},${variable_out} ${name_day_work} ${name_day}
+
+            if [[ ${agg_method} = "mean" ]]; then
+                cdo monmean ${name_day} ${name_mon}
+            elif [[ ${agg_method} = "sum" ]]; then
+                cdo monsum ${name_day} ${name_mon}
+            elif [[ ${agg_method} = "max" ]]; then    
+                cdo monmax ${name_day} ${name_mon}
+            elif [[ ${agg_method} = "min" ]]; then
+                cdo monmin ${name_day} ${name_mon}
+            fi
         done
-        cdo mergetime ${workdir}/${variable_out}_day_${data}_${YEAR}??.nc ${name_day}
-        if [[ ${agg_method} = "mean" ]]; then
-            cdo monmean ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "sum" ]]; then
-            cdo monsum ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "max" ]]; then    
-            cdo monmax ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "min" ]]; then
-            cdo monmin ${name_day} ${name_mon}
-        fi
+
         # clean up workdir
         rm ${workdir}/*
     done
