@@ -45,32 +45,48 @@ do
     echo "Processing variable $VARI, $product_type, with aggregation method $agg_method."
     workdir=${outdir}/work/${VARI}
     ## create directories if do not exist yet
-    mkdir -p ${outdir}/${variable_out}/day/native
-    mkdir -p ${outdir}/${variable_out}/mon/native
     mkdir -p ${workdir}
 
     for YEAR in $(seq ${syear} ${eyear})
     do
         echo $YEAR
+        mkdir -p ${outdir}/${variable_out}/day/native/${YEAR}
+        mkdir -p ${outdir}/${variable_out}/mon/native/${YEAR}
 
         for MONTH in $(seq -w 01 12)
         do
             echo $MONTH
-            name_mon=${outdir}/${variable_out}/mon/native/${variable_out}_mon_${data_in}_${YEAR}${MONTH}.nc
-            name_day=${outdir}/${variable_out}/day/native/${variable_out}_day_${data_in}_${YEAR}${MONTH}.nc
+            name_mon=${outdir}/${variable_out}/mon/native/${YEAR}/${variable_out}_mon_${data}_${YEAR}${MONTH}.nc
+            name_day=${outdir}/${variable_out}/day/native/${YEAR}/${variable_out}_day_${data}_${YEAR}${MONTH}.nc
 
-            name_day_work=${workdir}/${VARI}_day_${data}_${YEAR}${MONTH}.nc
+            name_day_work=${workdir}/${VARI}_day_${data}_${YEAR}${MONTH}
 
             name_in1=${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
             tmp=${workdir}/tmpfile_${YEAR}${MONTH}.nc
 
             if [ ! -f name_in1 ]; then
                 # first need to concatenate all days in month
-                cdo mergetime ${archive}/original/${VARI}/1hr/${YEAR}/${MONTH}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc ${name_in1}
+                ncrcat ${archive}/original/${VARI}/1hr/${YEAR}/${MONTH}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc ${name_in1}
                 name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
             else
                 name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
             fi
+
+            if [ -z ${plev+x} ]; then
+                # determine if variable is on plev, if yes set chunking dimension for plev
+                plev_info=$(ncdump -h "$name_in1" | grep "plev")
+                # Check if the dimension exists in the output
+                if [[ -n "$plev_info" ]]; then
+                    plev=$(echo "$plev_info" | awk '{print $4;}')
+                    echo "The dimension 'plev' exists in the NetCDF file and is plev=$plev."
+                    chunking_dimensions = "--cnk_dmn=time,1 --cnk_dmn=plev,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22"
+                else
+                    echo "The dimension 'plev' does not exist in the NetCDF file."
+                    plev=0
+                    chunking_dimensions = "--cnk_dmn=time,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22"
+                fi
+            fi  
+
 
             if [[ ${product_type} = "forecast" ]]; then
                 # -> last timestep is next day 00:00:00 and contains data from day before
@@ -94,6 +110,7 @@ do
                     # for the first year January data starts at 6:00:00, so no need to cut the first hour
                     cp ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 else
+                    # cut first hour and chunk data into small lat, lon blocks
                     ncks -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 fi
 
@@ -103,7 +120,8 @@ do
             fi
 
             if [ ${agg_method} = "mean" ]; then
-                cdo daymean ${tmp} ${name_day_work}               
+                cdo daymean ${tmp} ${name_day_work}.nc
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc               
             elif [ ${agg_method} = "sum" ]; then
                 # variables which are sums over days should be forecast
                 if [[ ${product_type} != "forecast" ]]; then
@@ -111,13 +129,18 @@ do
                     echo "Variables which are sums over days should be forecast."
                     exit
                 fi
-                cdo daysum ${tmp} ${name_day_work}                
+                cdo daysum ${tmp} ${name_day_work}.nc
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as sum over 01:00:00 to 00:00:00 next day." ${name_day_work}.nc ${name_day_work}_ncatted.nc                
             elif [ ${agg_method} = "max" ]; then
-                cdo daymax ${tmp} ${name_day_work}                
+                cdo daymax ${tmp} ${name_day_work}.nc
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as max over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc                
             elif [ ${agg_method} = "min" ]; then
-                cdo daymin ${tmp} ${name_day_work}  
+                cdo daymin ${tmp} ${name_day_work}.nc
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc  
             fi
-            cdo chname,${VARI},${variable_out} ${name_day_work} ${name_day}
+            ncks -O -4 -D 4 --cnk_plc=g3d $chunking_dimensions ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+            cdo chname,${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
+            
 
             if [[ ${agg_method} = "mean" ]]; then
                 cdo monmean ${name_day} ${name_mon}
