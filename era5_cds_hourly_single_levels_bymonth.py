@@ -6,8 +6,8 @@
 
 variables = ['strd', 'ssrd', 'str']
 
-startyr=2022
-endyr=2022
+startyr=1975
+endyr=1980
 month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path=f'/net/atmos/data/era5_cds/original/'
 overwrite=False
@@ -108,7 +108,7 @@ for year in range(startyr, endyr+1):
             f'{grib_file}')
 
         # convert grib file to netcdf
-        os.system(f'cdo -f nc copy {grib_file} {workdir}/variables_1hr_era5_{year}{month}.nc')
+        os.system(f'cdo -f nc4 copy {grib_file} {workdir}/variables_1hr_era5_{year}{month}.nc')
 
         # extract individual variables and change metadata
         for v, var in enumerate(variables):
