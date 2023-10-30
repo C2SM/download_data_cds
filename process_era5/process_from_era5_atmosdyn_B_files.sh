@@ -43,20 +43,21 @@ VARI=${variable_out}
 workdir=${outdir}/work/${VARI}
 
 ## create directories if do not exist yet
-mkdir -p ${outdir}/${VARI}/day/native
-mkdir -p ${outdir}/${VARI}/mon/native
+
 mkdir -p ${workdir}
 
 for YEAR in $(seq ${syear} ${eyear})
 do
     echo $YEAR
+    mkdir -p ${outdir}/${VARI}/day/native/${YEAR}
+    mkdir -p ${outdir}/${VARI}/mon/native/${YEAR}
 
     for MONTH in $(seq -w 01 12)
     do
         echo $MONTH
 
-        name_mon=${outdir}/${VARI}/mon/native/${VARI}_mon_${data_in}_${YEAR}${MONTH}.nc
-        name_day=${outdir}/${VARI}/day/native/${VARI}_day_${data_in}_${YEAR}${MONTH}.nc
+        name_mon=${outdir}/${VARI}/mon/native/${YEAR}/${VARI}_mon_${data_in}_${YEAR}${MONTH}.nc
+        name_day=${outdir}/${VARI}/day/native/${YEAR}/${VARI}_day_${data_in}_${YEAR}${MONTH}.nc
 
         for DAY in $(seq -w 01 31)
         do
