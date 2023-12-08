@@ -8,14 +8,14 @@
 
 ###-------------------------------------------------------
 printf -v date '%(%Y-%m-%d_%H%M%S)T' -1
-logfile="calc_day_mon_era5_$date.log"
+logfile="calc_day_mon_era5_3D_v2_$date.log"
 {
 ##-----------------------##
 ## load required modules ##
 ##-----------------------##
-module load netcdf
-module load nco/4.5.3
-module load cdo
+module load netcdf/4.7.4
+module load nco/5.1.8
+module load cdo/2.3.0
 
 ##---------------------##
 ## user specifications ##
@@ -31,14 +31,17 @@ agg_method="mean"
 product_type="analysis"
 
 ## years which need to be processed
-syear=2022
-eyear=2022
+syear=1980
+eyear=1980
 
 archive=/net/atmos/data/${DATA}
 version=v2
 
 outdir=${archive}/processed/${version}
 
+# set chunksizes for lat and lon
+lat_ck="45"
+lon_ck="22"
 
 for VARI in $variable_in
 do
@@ -67,9 +70,6 @@ do
             if [ ! -f name_in1 ]; then
                 # first need to concatenate all days in month
                 ncrcat ${archive}/original/${VARI}/1hr/${YEAR}/${MONTH}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc ${name_in1}
-                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
-            else
-                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
             fi
 
             if [ -z ${plev+x} ]; then
@@ -77,16 +77,13 @@ do
                 plev_info=$(ncdump -h "$name_in1" | grep "plev")
                 # Check if the dimension exists in the output
                 if [[ -n "$plev_info" ]]; then
-                    plev=$(echo "$plev_info" | awk '{print $4;}')
+                    plev=$(echo "$plev_info" | awk 'NR==1 {print NR,$3}' | cut -d' ' -f2)
                     echo "The dimension 'plev' exists in the NetCDF file and is plev=$plev."
-                    chunking_dimensions = "--cnk_dmn=time,1 --cnk_dmn=plev,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22"
                 else
                     echo "The dimension 'plev' does not exist in the NetCDF file."
                     plev=0
-                    chunking_dimensions = "--cnk_dmn=time,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22"
                 fi
-            fi  
-
+            fi
 
             if [[ ${product_type} = "forecast" ]]; then
                 # -> last timestep is next day 00:00:00 and contains data from day before
@@ -99,6 +96,7 @@ do
                     let NEWMONTH=MONTH1+1
                     MONTH2=$(printf "%02d" $NEWMONTH)
                 fi                
+                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
 
                 # extract first timestep from next day and concatenate with day before
                 cdo seltimestep,1,1 ${name_in2} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
@@ -138,7 +136,11 @@ do
                 cdo daymin ${tmp} ${name_day_work}.nc
                 ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc  
             fi
-            ncks -O -4 -D 4 --cnk_plc=g3d $chunking_dimensions ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+            if [[ ${plev} -gt 0 ]]; then
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,${plev} --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+            else
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+            fi
             cdo chname,${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
             
 
