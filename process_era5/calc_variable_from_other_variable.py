@@ -156,7 +156,6 @@ def main():
 					"_FillValue": 1.e+20}
 
 		ds_out = da_out.assign_attrs(dict_attr).to_dataset(name=variable_out)
-		ds_out_chunked=ds_out.chunk(chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk})
 		filename_out = ifile.replace(var , variable_out)
 
 		year = filename_out.split('/')[10]
@@ -165,7 +164,7 @@ def main():
 		if not os.path.exists(outdir_year):
 			os.makedirs(outdir_year)
 
-		ds_out_chunked.to_netcdf(filename_out, encoding={variable_out: {"chunksizes": (time_chk, lat_chk, lon_chk)}})
+		ds_out.to_netcdf(filename_out, encoding={variable_out: {"chunksizes": (time_chk, lat_chk, lon_chk)}})
 		logger.info("Data written to %s", filename_out)
 
 	dt = datetime.now() - t0
