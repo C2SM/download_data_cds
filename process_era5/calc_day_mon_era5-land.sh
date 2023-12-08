@@ -13,26 +13,28 @@ logfile="calc_day_mon_$date.log"
 ##-----------------------##
 ## load required modules ##
 ##-----------------------##
-module load netcdf
-module load nco/4.5.3
-module load cdo
+module load netcdf/4.7.4
+module load nco/5.1.8
+module load cdo/2.3.0
 
 ##---------------------##
 ## user specifications ##
 ##-------------------- ##
 DATA="era5-land_cds"
 data="era5-land"
-variable="swvl2"
-long_name="volumetric_soil_water_layer_2"
-unit="m**3 m**-3"
+variable="pev"
+long_name="potential_evaporation"
+unit="m"
 # aggregation method, depends on variable (mean, sum, max, min, inst)
-agg_method="mean"
+agg_method="sum"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
-product_type="analysis"
+# in case of accumulated variables they are accumulated over a day -> only need 00:00:00 timestep for day before
+# check how data was downloaded, true 1-hr values -> use agg_method="inst", only 00:00:00 downloaded, use agg_method="sum"
+product_type="forecast"
 
 ## years which need to be processed
-syear=1959
+syear=1950
 eyear=2022
 
 archive=/net/atmos/data/${DATA}
@@ -82,11 +84,11 @@ do
                 # extract first timestep from next day and concatenate with day before
                 cdo seltimestep,1,1 ${name_in2} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
                 cdo mergetime ${name_in1} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
-                #rm ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
+                rm ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
 
                 cdo shifttime,-1sec ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc
-                if [ ${YEAR} -eq 1940 ] && [ ${MONTH} -eq 01 ]; then
-                    # for the first year January data starts at 6:00:00, so no need to cut the first hour
+                if [ ${YEAR} -eq 1950 ] && [ ${MONTH} -eq 01 ] && [ ${product_type} = "forecast" ] && [ ${agg_method} = "sum" ]; then
+                    # no need to cut first timestep, not downloaded
                     cp ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 else
                     ncks -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
@@ -122,8 +124,8 @@ do
             fi
         done
         cdo mergetime ${workdir}/${VARI}_day_${data}_${YEAR}??.nc ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc
-        ncatted -a standard_name,${VARI},c,c,"${long_name}" ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc
-        ncatted -O -a units,${VARI},c,c,"${unit}" ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc ${name_day}
+        ncatted -a standard_name,${VARI},o,c,"${long_name}" ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc
+        ncatted -O -a units,${VARI},o,c,"${unit}" ${workdir}/${VARI}_day_${data}_${YEAR}_ncatted.nc ${name_day}
 
 
         if [ ${agg_method} = "mean" ] || [ ${agg_method} = "inst" ]; then
