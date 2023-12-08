@@ -14,9 +14,9 @@ logfile="process_from_era5_atmosdyn_H_files_$date.log"
 ##-----------------------##
 ## load required modules ##
 ##-----------------------##
-module load netcdf
-module load nco
-module load cdo
+module load netcdf/4.7.4
+module load nco/5.1.8
+module load cdo/2.3.0
 
 ##---------------------##
 ## user specifications ##
@@ -30,8 +30,8 @@ agg_method="mean"
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=2021
-eyear=2021
+syear=1980
+eyear=1985
 
 archive=/net/atmos/data/${data_out}
 version=v2
@@ -85,9 +85,15 @@ do
 
             # change variable name to cmip name
             cdo chname,${variable_in},${variable_out} ${workdir}/${variable_in}_day_${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_out}_day_${YEAR}${MONTH}${DAY}.nc
+            # determine number of p-levels if plev variable is not set yet, for chunking later on
+            if [ -v ${plev} ]; then
+                plev_info=$(ncdump -h "${workdir}/${variable_out}_day_${YEAR}${MONTH}${DAY}.nc" | grep "plev")
+                plev=$(echo "$plev_info" | awk 'NR==1 {print $3;}')
+            fi
         done
-        # concatenate all days per month
-        ncrcat -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22 ${workdir}/${variable_out}_day_${YEAR}${MONTH}*.nc  ${name_day}
+
+        # concatenate all days per month and chunk
+        ncrcat -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,$plev --cnk_dmn=lat,46 --cnk_dmn=lon,22 ${workdir}/${variable_out}_day_${YEAR}${MONTH}*.nc  ${name_day}
 
         if [[ $agg_method == "mean" ]]
         then
