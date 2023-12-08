@@ -14,24 +14,24 @@ logfile="process_from_era5_atmosdyn_B_files_$date.log"
 ##-----------------------##
 ## load required modules ##
 ##-----------------------##
-module load netcdf
-module load nco
-module load cdo
+module load netcdf/4.7.4
+module load nco/5.1.8
+module load cdo/2.3.0
 
 ##---------------------##
 ## user specifications ##
 ##-------------------- ##
 data_in="era5"
 data_out="era5_cds"
-variable_in="T2M"
-variable_out="tas"
+variable_in="PS"
+variable_out="ps"
 agg_method="mean"
 
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=2022
-eyear=2022
+syear=1980
+eyear=1985
 
 archive=/net/atmos/data/${data_out}
 version=v2
