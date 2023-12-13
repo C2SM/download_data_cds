@@ -23,8 +23,8 @@ from datetime import datetime
 ####################
 
 indir = "/net/atmos/data/era5_cds/processed/v2/"
-variables_in = ["uas", "vas"]
-variable_out = "sfcWind"
+variables_in = ["strd", "rls"]
+variable_out = "rlds"
 freq = "day"
 grid = "native"
 syear=1980
@@ -78,14 +78,46 @@ def calculate_rlds_from_strd_str(strd, str):
 	Calculate long-wave downwelling radiation at surface
 
 	Input:
-	strd:
-	str:
+	strd: Surface long-wave (thermal) radiation downwards
+	str: Surface net long-wave (thermal) radiation
 
 	Returns:
-	rlds in w-2 s-1
+	rlds (Surface Downwelling Longwave Radiation ) in W m-2
 	'''
 	
 	return np.subtract(strd, str)
+
+
+def calculate_relative_humidity(dewpoint_temp, temperature, pressure):
+	'''
+	Calculate relative humidity from dew point temperature, temperature and presssure
+
+	Input:
+	dewpoint_temp: dewpoint temperature at 2m
+	temperature: temperaturea at 2m
+	pressure: surface pressure
+
+	Returns:
+	hurs: relative humidity at 2m
+	'''
+    # Constants for the calculation
+    a = 17.27
+    b = 237.7
+
+    # Calculate saturation vapor pressure
+    alpha = ((a * temperature) / (b + temperature)) + log(dewpoint_temp / 100.0)
+    saturation_vapor_pressure = 6.112 * exp(alpha)
+
+    # Calculate actual vapor pressure
+    beta = ((a * dewpoint_temp) / (b + dewpoint_temp)) + log(dewpoint_temp / 100.0)
+    actual_vapor_pressure = 6.112 * exp(beta)
+
+    # Calculate relative humidity
+    relative_humidity = (actual_vapor_pressure / saturation_vapor_pressure) * 100
+
+    return relative_humidity
+
+
 
 def main():
 
@@ -125,8 +157,21 @@ def main():
 			logger.warning('Could not open file %s, continuing.', ifile_2)
 			continue
 
-		da_1 = ds_1[var]
-		da_2 = ds_2[variables_in[1]]
+		if len(variables_in) > 2:
+			# find matching file with third variable
+			ifile_3 = ifile.replace(var, variables_in[2])
+			if os.path.isfile(ifile_3):
+				logger.info("third file found")
+			else:
+				logger.warning("No matching third file found, continuing.")
+				continue
+			try:
+				ds_3 = xr.open_dataset(ifile_3, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk})
+				logger.info('Open data ifile_3')
+			except OSError:
+				logger.warning('Could not open file %s, continuing.', ifile_3)
+				continue
+			
 
 		if variable_out == 'sfcWind':
 			logger.info('Processing variable sfcWind')
@@ -141,6 +186,14 @@ def main():
 			da_2 = ds_2[variables_in[1]]
 
 			da_out = calculate_rlds_from_strd_str(da_1, da_2)
+
+		elif variable_out=="hurs":
+			logger.info('Processing variable hurs')
+			da_1 = ds_1[var]
+			da_2 = ds_2[variables_in[1]]
+			da_3 = ds_3[variables_in[2]]
+
+			da_out = calculate_relative_humidity(da_1, da_2, da_3)
 		else:
 			logger.error("Not implemented output variable %s", variable_out)
 
