@@ -22,8 +22,8 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5_cds"
 data="era5"
-variable_in="tp"
-variable_out="pr"
+variable_in="ssrd"
+variable_out="rsds"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="sum"
 # forecast or analysis? in case of forecast time needs to be shifted
@@ -108,8 +108,8 @@ do
                     # for the first year January data starts at 6:00:00, so no need to cut the first hour
                     cp ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 else
-                    # cut first hour and chunk data into small lat, lon blocks
-                    ncks -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
+                    # cut first hour
+                    ncks -O -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 fi
 
                 #rm ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc
@@ -128,6 +128,11 @@ do
                     exit
                 fi
                 cdo daysum ${tmp} ${name_day_work}.nc
+                # radiation variables are in J m-2, to obtain W m-2 we need to divide summed values by accumulation period expressed in seconds
+                if [[ ${variable_in} = "ssrd"  ||  ${variable_in} = "strd"  ||  ${variable_in} = "str" ]]; then
+                    cdo divc,86400  ${name_day_work}.nc ${name_day_work}_divc.nc
+                    ncatted -O -a units,${VARI},o,c,"W m-2" ${name_day_work}_divc.nc ${name_day_work}.nc
+                fi 
                 ncatted -O -h -a comment,global,m,c,"Daily data aggregated as sum over 01:00:00 to 00:00:00 next day." ${name_day_work}.nc ${name_day_work}_ncatted.nc                
             elif [ ${agg_method} = "max" ]; then
                 cdo daymax ${tmp} ${name_day_work}.nc
@@ -136,13 +141,20 @@ do
                 cdo daymin ${tmp} ${name_day_work}.nc
                 ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc  
             fi
+            # shift longitude to -180 to 180
+            cdo sellonlatbox,-180,179.5,-90,90 ${name_day_work}_ncatted.nc ${name_day_work}_sellonlat.nc
+
             if [[ ${plev} -gt 0 ]]; then
-                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,${plev} --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,${plev} --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_sellonlat.nc ${name_day_work}_chunked.nc
             else
-                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_sellonlat.nc ${name_day_work}_chunked.nc
             fi
-            cdo chname,${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
-            
+            # rename variable
+            if [[ ${VARI} != ${variable_out} ]]; then
+                ncrename -O -v ${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
+            else
+                mv ${name_day_work}_chunked.nc ${name_day}
+            fi
 
             if [[ ${agg_method} = "mean" ]]; then
                 cdo monmean ${name_day} ${name_mon}
