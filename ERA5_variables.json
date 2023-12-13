@@ -18,7 +18,7 @@
   "e"         : ["total_evaporation"                                   , "m of water equivalent" , "182"     , "sfc"     , "0"  , "1"  ],
   "pev"       : ["potential_evaporation"                               , "m"                     , "251"     , "sfc"     , "0"  , "1"  ],  
   "tp"        : ["total_precipitation"                                 , "m"                     , "228"     , "sfc"     , "0"  , "1"  ],
-  "cbh"       : ["cloud_base_height"                                   , "m"                     , "228023"  , "sfc"     , "0"  , "1"  ],
+  "cbh"       : ["cloud_base_height"                                   , "m"                     , "23"      , "sfc"     , "0"  , "1"  ],
   "smlt"      : ["snowmelt"                                            , "m of water equivalent" , "45"      , "sfc"     , "0"  , "1"  ],
   "sd"        : ["snow_depth_water_equivalent"                         , "m of water equivalent" , "141"     , "sfc"     , "0"  , "1"  ],
   "---------" : ["---------------------------------------------------" , "---------------------" , "-------" , "-------" , "--" , "--" ], 
