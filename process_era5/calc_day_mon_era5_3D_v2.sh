@@ -22,8 +22,8 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5_cds"
 data="era5"
-variable_in="cc"
-variable_out="clt"
+variable_in="r"
+variable_out="hur"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="mean"
 # forecast or analysis? in case of forecast time needs to be shifted
@@ -96,7 +96,7 @@ do
                     let NEWMONTH=MONTH1+1
                     MONTH2=$(printf "%02d" $NEWMONTH)
                 fi                
-                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
+                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${MONTH2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}01.nc
 
                 # extract first timestep from next day and concatenate with day before
                 cdo seltimestep,1,1 ${name_in2} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
@@ -109,7 +109,7 @@ do
                     cp ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 else
                     # cut first hour and chunk data into small lat, lon blocks
-                    ncks -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
+                    ncks -O -d time,1, ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}_shift.nc ${tmp}
                 fi
 
                 #rm ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}*.nc
@@ -141,7 +141,7 @@ do
             else
                 ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
             fi
-            cdo chname,${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
+            ncrename -v ${VARI},${variable_out} ${name_day_work}_chunked.nc ${name_day}
             
 
             if [[ ${agg_method} = "mean" ]]; then
