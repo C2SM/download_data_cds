@@ -8,7 +8,8 @@ variables = ['cc', 'r', 'u', 'v']
 
 startyr=1980
 endyr=1980
-month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+#month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+month_list=['12']
 path=f'/net/atmos/data/era5_cds/original/'
 overwrite=False
 
@@ -127,7 +128,7 @@ for year in range(startyr, endyr+1):
                 print(f'{workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc')
                 os.system(f'ncks -v {old_names[v]} {workdir}/Z_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc')
 
-                os.system(f'ncatted -a standard_name,{old_names[v]},c,c,"{long_names[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc')
+                os.system(f'ncatted -a long_name,{old_names[v]},c,c,"{long_names[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc')
                 os.system(f'ncatted -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted2.nc')
                 os.system(f'cdo setname,{varname} {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {archive}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
 

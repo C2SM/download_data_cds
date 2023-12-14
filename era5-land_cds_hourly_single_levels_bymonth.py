@@ -6,10 +6,10 @@
 
 variables = ['swvl3', 'swvl4']
 
-startyr=1969
-endyr=1969
+startyr=2013
+endyr=2013
 #month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-month_list=['04', '05', '06', '07', '08', '09', '10', '11', '12']
+month_list=['10', '11', '12']
 path=f'/net/atmos/data/era5-land_cds/original/'
 overwrite=False
 
@@ -117,7 +117,7 @@ for year in range(startyr, endyr+1):
             os.makedirs(path_out, exist_ok=True)
 
             os.system(f'ncks -v {old_names[v]} {workdir}/variables_1hr_era5-land_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}.nc')
-            os.system(f'ncatted -a standard_name,{old_names[v]},c,c,{long_names[v]} {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}_ncatted.nc')
+            os.system(f'ncatted -a long_name,{old_names[v]},c,c,{long_names[v]} {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}_ncatted.nc')
             os.system(f'ncatted -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}_ncatted.nc {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}_ncatted2.nc')
             os.system(f'cdo setname,{var} {workdir}/{old_names[v]}_1hr_era5-land_{year}{month}_ncatted2.nc {path_out}/{var}_1hr_era5-land_{year}{month}.nc')
-        os.system(f'rm {workdir}/*')
+        os.system(f'rm {workdir}/*_1hr_era5-land_{year}{month}*.nc')

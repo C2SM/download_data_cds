@@ -115,7 +115,7 @@ for year in range(startyr, endyr+1):
             os.makedirs(path_out, exist_ok=True)
 
             os.system(f'ncks -v {old_names[v]} {workdir}/variables_1hr_era5_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}.nc')
-            os.system(f'ncatted -a standard_name,{old_names[v]},c,c,{long_names[v]} {workdir}/{old_names[v]}_1hr_era5_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted.nc')
+            os.system(f'ncatted -a long_name,{old_names[v]},c,c,{long_names[v]} {workdir}/{old_names[v]}_1hr_era5_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted.nc')
             os.system(f'ncatted -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted2.nc')
             os.system(f'cdo setname,{var} {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted2.nc {path_out}/{var}_1hr_era5_{year}{month}.nc')
 
