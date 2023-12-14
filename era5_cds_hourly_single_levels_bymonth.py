@@ -4,13 +4,12 @@
 #                         U S E R  *  O P T I O N S
 # *******************************************************************************
 
-variables = ['strd', 'ssrd', 'str']
-
-startyr=1975
-endyr=1980
+variables = ['u10', 'v10', 'd2m', 'sp']
+startyr=1980
+endyr=1985
 month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path=f'/net/atmos/data/era5_cds/original/'
-overwrite=False
+overwrite=True
 
 # -------------------------------------------------
 # Getting libraries and utilities
@@ -56,8 +55,8 @@ logger.info(f'oldnames: {old_names}.')
 # -------------------------------------------------
 # Create directories if do not exist yet
 # -------------------------------------------------
-grib_path=f'{path}/grib'
-workdir=f'{path}/work'
+grib_path=f'{path}/grib/2D'
+workdir=f'{path}/work/2D'
 os.makedirs(path, exist_ok=True)
 os.makedirs(workdir, exist_ok=True)
 
@@ -119,4 +118,17 @@ for year in range(startyr, endyr+1):
             os.system(f'ncatted -a standard_name,{old_names[v]},c,c,{long_names[v]} {workdir}/{old_names[v]}_1hr_era5_{year}{month}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted.nc')
             os.system(f'ncatted -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted2.nc')
             os.system(f'cdo setname,{var} {workdir}/{old_names[v]}_1hr_era5_{year}{month}_ncatted2.nc {path_out}/{var}_1hr_era5_{year}{month}.nc')
-        os.system(f'rm {workdir}/*')
+
+        os.system(f'rm {workdir}/variables_1hr_era5_*')
+        os.system(f'rm {workdir}/{old_names[v]}_1hr_era5_*')
+
+        # check if all variables were processed properly, if yes, delete grib file
+        s=0
+        for var in variables:
+            if not os.path.isfile(f'{path_out}/{var}_1hr_era5_{year}{month}.nc'):
+                logger.warning(f'File {path_out}/{var}_1hr_era5_{year}{month}.nc was not processed properly!')
+            else:
+                s=+1
+        if s == len(variables):
+            logger.info('All variables were properly processed, deleting grib file.')
+            os.system(f'rm {grib_file}')        
