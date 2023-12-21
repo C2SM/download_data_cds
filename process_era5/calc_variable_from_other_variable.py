@@ -23,8 +23,8 @@ from datetime import datetime
 ####################
 
 indir = "/net/atmos/data/era5_cds/processed/v2/"
-variables_in = ["strd", "rls"]
-variable_out = "rlds"
+variables_in = ["d2m", "tas", "ps"]
+variable_out = "hurs"
 freq = "day"
 grid = "native"
 syear=1980
@@ -101,22 +101,21 @@ def calculate_relative_humidity(dewpoint_temp, temperature, pressure):
 	hurs: relative humidity at 2m
 	'''
     # Constants for the calculation
-    a = 17.27
-    b = 237.7
+	a = 17.27
+	b = 237.7
 
-    # Calculate saturation vapor pressure
-    alpha = ((a * temperature) / (b + temperature)) + log(dewpoint_temp / 100.0)
-    saturation_vapor_pressure = 6.112 * exp(alpha)
+	# Calculate saturation vapor pressure
+	alpha = ((a * temperature) / (b + temperature)) + np.log(dewpoint_temp / 100.0)
+	saturation_vapor_pressure = 6.112 * np.exp(alpha)
 
-    # Calculate actual vapor pressure
-    beta = ((a * dewpoint_temp) / (b + dewpoint_temp)) + log(dewpoint_temp / 100.0)
-    actual_vapor_pressure = 6.112 * exp(beta)
+	# Calculate actual vapor pressure
+	beta = ((a * dewpoint_temp) / (b + dewpoint_temp)) + np.log(dewpoint_temp / 100.0)
+	actual_vapor_pressure = 6.112 * np.exp(beta)
 
-    # Calculate relative humidity
-    relative_humidity = (actual_vapor_pressure / saturation_vapor_pressure) * 100
+	# Calculate relative humidity
+	relative_humidity = (actual_vapor_pressure / saturation_vapor_pressure) * 100
 
-    return relative_humidity
-
+	return relative_humidity
 
 
 def main():
@@ -176,28 +175,31 @@ def main():
 		if variable_out == 'sfcWind':
 			logger.info('Processing variable sfcWind')
 
-			da_out = compute_wind_from_u_v(da_1, da_2)
+			da_out = compute_wind_from_u_v(ds_1["uas"], ds_2["vas"])
 			standard_name="wind_speed"
 			long_name="Near-Surface Wind Speed"
 			unit="m s-1"
 		elif variable_out=="rlds":
 			logger.info('Processing variable rlds')
-			da_1 = ds_1[var]
-			da_2 = ds_2[variables_in[1]]
 
-			da_out = calculate_rlds_from_strd_str(da_1, da_2)
-
+			da_out = calculate_rlds_from_strd_str(ds_1["strd"], ds_2["rls"])
+			standard_name="surface_downwelling_longwave_flux_in_air"
+			long_name="Surface Downwelling Longwave Radiation"
+			unit="W m-2"
 		elif variable_out=="hurs":
 			logger.info('Processing variable hurs')
-			da_1 = ds_1[var]
-			da_2 = ds_2[variables_in[1]]
-			da_3 = ds_3[variables_in[2]]
 
-			da_out = calculate_relative_humidity(da_1, da_2, da_3)
+			da_out = calculate_relative_humidity(ds_1["d2m"], ds_2["tas"], ds_3["ps"])
+			standard_name="relative_humidity"
+			long_name="Near-Surface Relative Humidity"
+			unit="%"
 		else:
 			logger.error("Not implemented output variable %s", variable_out)
 
 		ds_2.close()
+		if len(variables_in) > 2:
+			ds_3.close()
+			
 		try:
 			cell_methods = ds_1[var].attrs["cell_methods"]
 		except KeyError:
