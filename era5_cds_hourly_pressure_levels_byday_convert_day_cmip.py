@@ -4,13 +4,12 @@
 #                         U S E R  *  O P T I O N S
 # *******************************************************************************
 
-variables = ['cc']
+variables = ['t']
 
 startyr=1980
 endyr=1980
 #month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-month_list=['12']
-path=f'/net/atmos/data/era5_cds/original/'
+month_list=['01']
 path_proc=f'/net/atmos/data/era5_cds/processed/v2/'
 overwrite=False
 time_chk=1
@@ -27,6 +26,17 @@ import cdsapi
 import logging
 import calendar
 import xarray
+import glob
+import socket
+
+# Get hostname to set workdir
+hostname=socket.gethostname()
+print('Hostname is %s' %(hostname))
+# run on nitrogen if possible
+if hostname == "nitrogen":
+    path=f'/c2sm-scratch/rlorenz/era5_cds/original/'
+else:
+    path=f'/net/nitrogen/c2sm-scratch/rlorenz/era5_cds/original/'
 
 # -------------------------------------------------
 # Create a simple logger
@@ -173,16 +183,18 @@ def main():
                             os.system(f'ncatted -a units,{varname},m,c,"{cmip_units[v]}" {workdir}/{varname}_1hr_era5_{year}{month}{day_str}_mulc.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
                         elif varname == "z":
                             logger.info(f'Unit for z needs to be changed from {units[v]} to {cmip_units[v]}.')
-                            os.system(f'cdo sqrt {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}_sqrt.nc')
+                            # https://confluence.ecmwf.int/display/CKB/ERA5%3A+compute+pressure+and+geopotential+on+model+levels%2C+geopotential+height+and+geometric+height#ERA5:computepressureandgeopotentialonmodellevels,geopotentialheightandgeometricheight-Geopotentialheight
+                            # Earth's gravitational acceleration [m/s2]
+                            const = 9.80665 
+                            os.system(f'cdo divc,{const} {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}_divc.nc')
                             os.system(f'rm {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
-                            os.system(f'ncatted -a units,{varname},m,c,"{cmip_units[v]}" {workdir}/{varname}_1hr_era5_{year}{month}{day_str}_sqrt.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
-
+                            os.system(f'ncatted -a units,{varname},m,c,"{cmip_units[v]}" {workdir}/{varname}_1hr_era5_{year}{month}{day_str}_divc.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
                         else:
                             logger.error(f'Conversion of unit for variable {varname} is not implemented!')
                             sys.exit(1)
 
                     # calculate daily means
-                    os.system(f'cdo daymean {archive}/{varname}_1hr_era5_{year}{month}{day_str}.nc  {workdir}/{varname}_daymean_era5_{year}{month}{day_str}.nc')
+                    os.system(f'cdo daymean {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc  {workdir}/{varname}_daymean_era5_{year}{month}{day_str}.nc')
 
                     s=0
                     if not os.path.isfile(f'{workdir}/{varname}_daymean_era5_{year}{month}{day_str}.nc'):
@@ -201,7 +213,7 @@ def main():
         os.makedirs(proc_archive, exist_ok=True)
 
         for v, varname in enumerate(variables):
-            outfile=f'{path_archive}/{cmip_names[v]}_day_era5_{year}{month}.nc'
+            outfile=f'{proc_archive}/{cmip_names[v]}_day_era5_{year}{month}.nc'
             name_day_work=f'{workdir}/{varname}_daymean_era5_{year}{month}'
 
             # check if all days for this month are available
