@@ -2,7 +2,7 @@
 # File Name: process_from_era5_atmosdyn_B_files.sh
 # Author:  Ruth Lorenz
 # Created: 27/09/2023
-# Modified: Wed Sep 27 17:17:03 2023
+# Modified: Fri Dec  8 17:29:09 2023
 # Purpose : process data from files stored in /net/thermo/atmosdyn/era5/cdf
 # 	(data downloaded by Michael Sprenger), e.g. temperature
 # 	at surface (T)  
@@ -23,8 +23,8 @@ module load cdo/2.3.0
 ##-------------------- ##
 data_in="era5"
 data_out="era5_cds"
-variable_in="PS"
-variable_out="ps"
+variable_in="TCC"
+variable_out="clt"
 agg_method="mean"
 
 path_in="/net/thermo/atmosdyn/era5/cdf"

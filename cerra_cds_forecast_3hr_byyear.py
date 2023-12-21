@@ -7,8 +7,8 @@ c = cdsapi.Client()
 
 var='ssrd'
 long_name='surface_solar_radiation_downwards'
-startyr=1985
-endyr=2021
+startyr=2022
+endyr=2022
 archive=f'/net/atmos/data/cerra/original/{var}'
 
 if (os.access(archive, os.F_OK) == False):

@@ -6,10 +6,9 @@
 
 variables = ['swvl3', 'swvl4']
 
-startyr=2013
-endyr=2013
-#month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-month_list=['10', '11', '12']
+startyr=2014
+endyr=2014
+month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path=f'/net/atmos/data/era5-land_cds/original/'
 overwrite=False
 

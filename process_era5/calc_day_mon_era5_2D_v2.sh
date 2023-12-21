@@ -22,8 +22,8 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5_cds"
 data="era5"
-variable_in="ssrd"
-variable_out="rsds"
+variable_in="str"
+variable_out="str"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="sum"
 # forecast or analysis? in case of forecast time needs to be shifted
