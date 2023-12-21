@@ -58,8 +58,8 @@ logger.info(f'oldnames: {old_names}.')
 # -------------------------------------------------
 # Create directories if do not exist yet
 # -------------------------------------------------
-grib_path=f'{path}/grib'
-workdir=f'{path}/work'
+grib_path=f'{path}/grib/3D'
+workdir=f'{path}/work/3D'
 os.makedirs(path, exist_ok=True)
 os.makedirs(workdir, exist_ok=True)
 
