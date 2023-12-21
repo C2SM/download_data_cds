@@ -23,7 +23,7 @@ from datetime import datetime
 ####################
 
 indir = "/net/atmos/data/era5_cds/processed/v2/"
-variables_in = ["d2m", "tas", "ps"]
+variables_in = ["d2m", "tas"]
 variable_out = "hurs"
 freq = "day"
 grid = "native"
@@ -88,29 +88,35 @@ def calculate_rlds_from_strd_str(strd, str):
 	return np.subtract(strd, str)
 
 
-def calculate_relative_humidity(dewpoint_temp, temperature, pressure):
+def calculate_relative_humidity(dewpoint_temp, temperature):
 	'''
-	Calculate relative humidity from dew point temperature, temperature and presssure
+	Calculate relative humidity from dew point temperature and temperature
+	https://web.archive.org/web/20200212215746im_/https://www.vaisala.com/en/system/files?file=documents/Humidity_Conversion_Formulas_B210973EN.pdf
+	Formula 6, constants in Table 1 for temperatures from -20 to 50 °C
 
 	Input:
 	dewpoint_temp: dewpoint temperature at 2m
 	temperature: temperaturea at 2m
-	pressure: surface pressure
 
 	Returns:
 	hurs: relative humidity at 2m
 	'''
     # Constants for the calculation
-	a = 17.27
-	b = 237.7
+	A = 6.116441
+	m = 7.591386
+	t = 273.15
+	Tn = 240.7263
+
+	temperature_C = temperature - t
+	dewpoint_temp_C = dewpoint_temp - t
 
 	# Calculate saturation vapor pressure
-	alpha = ((a * temperature) / (b + temperature)) + np.log(dewpoint_temp / 100.0)
-	saturation_vapor_pressure = 6.112 * np.exp(alpha)
+	alpha = ((m * temperature_C) / (Tn + temperature_C))
+	saturation_vapor_pressure = A * np.exp(alpha)
 
 	# Calculate actual vapor pressure
-	beta = ((a * dewpoint_temp) / (b + dewpoint_temp)) + np.log(dewpoint_temp / 100.0)
-	actual_vapor_pressure = 6.112 * np.exp(beta)
+	beta = ((m * dewpoint_temp_C) / (Tn + dewpoint_temp_C))
+	actual_vapor_pressure = A * np.exp(beta)
 
 	# Calculate relative humidity
 	relative_humidity = (actual_vapor_pressure / saturation_vapor_pressure) * 100
@@ -189,7 +195,7 @@ def main():
 		elif variable_out=="hurs":
 			logger.info('Processing variable hurs')
 
-			da_out = calculate_relative_humidity(ds_1["d2m"], ds_2["tas"], ds_3["ps"])
+			da_out = calculate_relative_humidity(ds_1["d2m"], ds_2["tas"])
 			standard_name="relative_humidity"
 			long_name="Near-Surface Relative Humidity"
 			unit="%"
