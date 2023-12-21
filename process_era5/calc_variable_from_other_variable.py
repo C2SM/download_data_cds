@@ -91,8 +91,7 @@ def calculate_rlds_from_strd_str(strd, str):
 def calculate_relative_humidity(dewpoint_temp, temperature):
 	'''
 	Calculate relative humidity from dew point temperature and temperature
-	https://web.archive.org/web/20200212215746im_/https://www.vaisala.com/en/system/files?file=documents/Humidity_Conversion_Formulas_B210973EN.pdf
-	Formula 6, constants in Table 1 for temperatures from -20 to 50 °C
+	https://journals.ametsoc.org/view/journals/bams/86/2/bams-86-2-225.xml?tab_body=fulltext-display
 
 	Input:
 	dewpoint_temp: dewpoint temperature at 2m
@@ -102,21 +101,22 @@ def calculate_relative_humidity(dewpoint_temp, temperature):
 	hurs: relative humidity at 2m
 	'''
     # Constants for the calculation
-	A = 6.116441
-	m = 7.591386
+	A1 = 17.625
+	B1 = 243.04
+	C1 = 610.94
+
 	t = 273.15
-	Tn = 240.7263
 
 	temperature_C = temperature - t
 	dewpoint_temp_C = dewpoint_temp - t
 
 	# Calculate saturation vapor pressure
-	alpha = ((m * temperature_C) / (Tn + temperature_C))
-	saturation_vapor_pressure = A * np.exp(alpha)
+	alpha = ((A1 * temperature_C) / (B1 + temperature_C))
+	saturation_vapor_pressure = C1 * np.exp(alpha)
 
 	# Calculate actual vapor pressure
-	beta = ((m * dewpoint_temp_C) / (Tn + dewpoint_temp_C))
-	actual_vapor_pressure = A * np.exp(beta)
+	beta = ((A1 * dewpoint_temp_C) / (B1 + dewpoint_temp_C))
+	actual_vapor_pressure = C1 * np.exp(beta)
 
 	# Calculate relative humidity
 	relative_humidity = (actual_vapor_pressure / saturation_vapor_pressure) * 100
