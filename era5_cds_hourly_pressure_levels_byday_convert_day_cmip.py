@@ -9,7 +9,7 @@ variables = ['t', 'u', 'v', 'r', 'cc', 'z']
 startyr=1980
 endyr=1980
 #month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-month_list=['01']
+month_list=['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path_proc=f'/net/atmos/data/era5_cds/processed/v2/'
 overwrite=False
 time_chk=1
@@ -101,7 +101,7 @@ def read_cmip_info(cmip_name):
     standrtad_name and long_name of that variable
     '''
 
-    with open("/net/co2/c2sm/rlorenz/scripts/cmip6-cmor-tables/Tables/CMIP6_day.json") as jf_cmip:
+    with open("/net/co2/c2sm/rlorenz/scripts/cmip6-cmor-tables/Tables/CMIP6_Amon.json") as jf_cmip:
         cmip6 = json.load(jf_cmip)
 
         cmip_standard_name = cmip6["variable_entry"][cmip_name]["standard_name"]
@@ -123,7 +123,9 @@ def main():
     os.makedirs(grib_path, exist_ok=True)
     os.makedirs(workdir, exist_ok=True)
 
+    # -------------------------------------------------
     # read ERA5_variables.json
+    # -------------------------------------------------
     long_names, units, old_names, cmip_names, cmip_units = read_era5_info(variables)
     logger.info(f'ERA5 variable info red from json file.')
     logger.info(f'longnames: {long_names},')
@@ -265,8 +267,11 @@ def main():
             os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted3.nc {name_day_work}_chunked.nc')
             os.system(f'ncrename -v {varname},{cmip_names[v]} {name_day_work}_chunked.nc {outfile}')
 
-        #os.system(f'rm {workdir}/*')
-        #os.system(f'rm {grib_path}/*')
+        # -------------------------------------------------
+        # Clean up
+        # -------------------------------------------------
+        os.system(f'rm {workdir}/*')
+        os.system(f'rm {grib_path}/*')
 
 if __name__ == "__main__":
     main()
