@@ -46,6 +46,9 @@ logging.basicConfig(format='%(asctime)s | %(levelname)s : %(message)s',
                      level=logging.INFO)
 logger = logging.getLogger()
 
+# -------------------------------------------------
+# Read ERA5 info from JSON file
+# -------------------------------------------------
 
 def read_era5_info(variable_list):
     '''
@@ -83,6 +86,31 @@ def read_era5_info(variable_list):
 
     return long_names, units, old_names, cmip_names, cmip_units
 
+
+# -------------------------------------------------
+# Read CMIP6 info from JSON file
+# -------------------------------------------------
+def read_cmip_info(cmip_name):
+    '''
+    Loading CMIP variables's information from JSON file
+
+    Input:
+    A short CMIP variable name such as "tas"
+ 
+    Return:
+    standrtad_name and long_name of that variable
+    '''
+
+    with open("/net/co2/c2sm/rlorenz/scripts/cmip6-cmor-tables/Tables/CMIP6_day.json") as jf_cmip:
+        cmip6 = json.load(jf_cmip)
+
+        cmip_standard_name = cmip6["variable_entry"][cmip_name]["standard_name"]
+        cmip_long_name = cmip6["variable_entry"][cmip_name]["long_name"]
+
+    return cmip_standard_name, cmip_long_name
+
+
+# -------------------------------------------------
 
 def main():
 
@@ -169,10 +197,8 @@ def main():
                     print(f'{workdir}/Z_1hr_era5_{year}{month}{day_str}.nc')
                     print(f'{workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc')
                     os.system(f'ncks -O -v {old_names[v]} {workdir}/Z_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc')
-
-                    os.system(f'ncatted -O -a long_name,{old_names[v]},c,c,"{long_names[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc')
-                    os.system(f'ncatted -O -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted2.nc')
-                    os.system(f'cdo setname,{varname} {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
+                    os.system(f'ncatted -O -a units,{old_names[v]},c,c,"{units[v]}" {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc')
+                    os.system(f'cdo setname,{varname} {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_ncatted.nc {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
 
                     # check if unit needs to be changed from era5 variable to cmip variable
                     if (units[v] != cmip_units[v]):
@@ -202,7 +228,7 @@ def main():
                     else:
                         # clean up 1-hr data
                         os.system(f'rm {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
-                        os.system(f'rm {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}.nc')
+                        os.system(f'rm {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_*.nc')
 
             os.system(f'rm {grib_file}')
             os.system(f'rm {workdir}/Z_1hr_era5_{year}{month}{day_str}.nc')
@@ -230,11 +256,17 @@ def main():
             with xr.open_dataset(f'{name_day_work}.nc') as ds:
                 plev = ds.sizes['plev']
 
+            # read cmip standard_name and long_name from cmip6-cmor-tables
+            cmip_standard_name, cmip_long_name = read_cmip_info(cmip_names[v])
+
             os.system(f'ncatted -O -h -a comment,global,c,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." {name_day_work}.nc {name_day_work}_ncatted.nc')
-            os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted.nc {name_day_work}_chunked.nc')
+            os.system(f'ncatted -O -a long_name,{varname},c,c,"{cmip_long_name}" {name_day_work}_ncatted.nc {name_day_work}_ncatted2.nc')
+            os.system(f'ncatted -O -a standard_name,{varname},c,c,"{cmip_standard_name}" {name_day_work}_ncatted2.nc {name_day_work}_ncatted3.nc')
+            os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted3.nc {name_day_work}_chunked.nc')
             os.system(f'ncrename -v {varname},{cmip_names[v]} {name_day_work}_chunked.nc {outfile}')
 
         #os.system(f'rm {workdir}/*')
+        #os.system(f'rm {grib_path}/*')
 
 if __name__ == "__main__":
     main()
