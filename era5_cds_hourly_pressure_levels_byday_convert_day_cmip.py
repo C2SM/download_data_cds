@@ -6,10 +6,10 @@
 
 variables = ['t', 'u', 'v', 'r', 'cc', 'z']
 
-startyr=1980
-endyr=1980
-#month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-month_list=['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+startyr=1981
+endyr=2023
+month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+#month_list=['04', '05', '06', '07', '08', '09', '10', '11', '12']
 path_proc=f'/net/atmos/data/era5_cds/processed/v2/'
 overwrite=False
 time_chk=1
@@ -229,46 +229,45 @@ def main():
                         logger.warning(f'{workdir}/{varname}_daymean_era5_{year}{month}{day_str}.nc was not processed properly!')
                     else:
                         # clean up 1-hr data
-                        os.system(f'rm {workdir}/{varname}_1hr_era5_{year}{month}{day_str}.nc')
-                        os.system(f'rm {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}_*.nc')
+                        os.system(f'rm {workdir}/{varname}_1hr_era5_{year}{month}{day_str}*.nc')
+                        os.system(f'rm {workdir}/{old_names[v]}_1hr_era5_{year}{month}{day_str}*.nc')
 
             os.system(f'rm {grib_file}')
             os.system(f'rm {workdir}/Z_1hr_era5_{year}{month}{day_str}.nc')
 
 
-        # concatenate daily files for each month and convert to cmip standards
+            # concatenate daily files for each month and convert to cmip standards
+            for v, varname in enumerate(variables):
+                proc_archive=f'{path_proc}/{cmip_names[v]}/day/native/{year}'
+                os.makedirs(proc_archive, exist_ok=True)
 
-        for v, varname in enumerate(variables):
-            proc_archive=f'{path_proc}/{cmip_names[v]}/day/native/{year}'
-            os.makedirs(proc_archive, exist_ok=True)
+                outfile=f'{proc_archive}/{cmip_names[v]}_day_era5_{year}{month}.nc'
+                name_day_work=f'{workdir}/{varname}_daymean_era5_{year}{month}'
 
-            outfile=f'{proc_archive}/{cmip_names[v]}_day_era5_{year}{month}.nc'
-            name_day_work=f'{workdir}/{varname}_daymean_era5_{year}{month}'
+                # check if all days for this month are available
+                daily_files = glob.glob(f'{name_day_work}??.nc')
+                num_days_month = calendar.monthrange(year, int(month))[1]
+                if (len(daily_files) != num_days_month):
+                    logger.error(f'Not all files for year {year} and month {month} are there!')
+                    sys.exit(1)
+                else:
+                    os.system(f'cdo mergetime {name_day_work}??.nc {name_day_work}.nc')
 
-            # check if all days for this month are available
-            daily_files = glob.glob(f'{name_day_work}??.nc')
-            num_days_month = calendar.monthrange(year, int(month))[1]
-            if (len(daily_files) != num_days_month):
-                logger.error(f'Not all files for year {year} and month {month} are there!')
-                sys.exit(1)
-            else:
-                os.system(f'cdo mergetime {name_day_work}??.nc {name_day_work}.nc')
+                # extract number of p-levels for chunking
+                with xr.open_dataset(f'{name_day_work}.nc') as ds:
+                    plev = ds.sizes['plev']
 
-            # extract number of p-levels for chunking
-            with xr.open_dataset(f'{name_day_work}.nc') as ds:
-                plev = ds.sizes['plev']
+                # read cmip standard_name and long_name from cmip6-cmor-tables
+                cmip_standard_name, cmip_long_name = read_cmip_info(cmip_names[v])
 
-            # read cmip standard_name and long_name from cmip6-cmor-tables
-            cmip_standard_name, cmip_long_name = read_cmip_info(cmip_names[v])
-
-            os.system(f'ncatted -O -h -a comment,global,c,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." {name_day_work}.nc {name_day_work}_ncatted.nc')
-            os.system(f'ncatted -O -a long_name,{varname},c,c,"{cmip_long_name}" {name_day_work}_ncatted.nc {name_day_work}_ncatted2.nc')
-            os.system(f'ncatted -O -a standard_name,{varname},c,c,"{cmip_standard_name}" {name_day_work}_ncatted2.nc {name_day_work}_ncatted3.nc')
-            os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted3.nc {name_day_work}_chunked.nc')
-            os.system(f'ncrename -v {varname},{cmip_names[v]} {name_day_work}_chunked.nc {outfile}')
-
-        # -------------------------------------------------
-        # Clean up
+                os.system(f'ncatted -O -h -a comment,global,c,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." {name_day_work}.nc {name_day_work}_ncatted.nc')
+                os.system(f'ncatted -O -a long_name,{varname},c,c,"{cmip_long_name}" {name_day_work}_ncatted.nc {name_day_work}_ncatted2.nc')
+                os.system(f'ncatted -O -a standard_name,{varname},c,c,"{cmip_standard_name}" {name_day_work}_ncatted2.nc {name_day_work}_ncatted3.nc')
+                os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted3.nc {name_day_work}_chunked.nc')
+                os.system(f'ncrename -v {varname},{cmip_names[v]} {name_day_work}_chunked.nc {outfile}')
+                logger.info(f'File {outfile} written.')
+            # -------------------------------------------------
+            # Clean up
         # -------------------------------------------------
         os.system(f'rm {workdir}/*')
         os.system(f'rm {grib_path}/*')
