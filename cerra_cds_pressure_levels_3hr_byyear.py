@@ -3,9 +3,9 @@
 import os
 import cdsapi
 
-var='v'
-long_name='v_component_of_wind'
-startyr=2019
+var='gp'
+long_name='geopotential'
+startyr=1985
 endyr=2021
 path=f'/net/atmos/data/cerra/original/{var}'
 
@@ -23,16 +23,9 @@ for year in range(startyr, endyr+1):
             'format': 'grib',
             'variable': f'{long_name}',
             'pressure_level': [
-                 '1', '2', '3',
-                 '5', '7', '10',
-                 '20', '30', '50',
-                 '70', '100', '150',
-                 '200', '250', '300',
-                 '400', '500', '600',
-                 '700', '750', '800',
-                 '825', '850', '875',
-                 '900', '925', '950',
-                 '975', '1000',
+                '850', '875',
+                '900', '925', '950',
+                '975', '1000',
             ],
             'data_type': 'reanalysis',
             'product_type': 'analysis',
