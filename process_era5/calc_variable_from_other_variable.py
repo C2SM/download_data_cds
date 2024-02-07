@@ -23,12 +23,12 @@ from datetime import datetime
 ####################
 
 indir = "/net/atmos/data/era5_cds/processed/v2/"
-variables_in = ["d2m", "tas"]
-variable_out = "hurs"
+variables_in = ["strd", "rls"]
+variable_out = "rlds"
 freq = "day"
 grid = "native"
-syear=1980
-eyear=1985
+syear=1986
+eyear=2022
 time_chk=1
 lat_chk=46
 lon_chk=22

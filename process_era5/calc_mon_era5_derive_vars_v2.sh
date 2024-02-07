@@ -13,7 +13,7 @@ logfile="calc_mon_era5_derive_vars_v2_$date.log"
 ##-----------------------##
 ## load required modules ##
 ##-----------------------##
-module load netcdf/4.7.4
+#module load netcdf/4.7.4
 module load nco/5.1.8
 module load cdo/2.3.0
 
@@ -22,7 +22,7 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5_cds"
 data="era5"
-variable="rlds"
+variable="hurs"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="mean"
 

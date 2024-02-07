@@ -4,9 +4,9 @@
 #                         U S E R  *  O P T I O N S
 # *******************************************************************************
 
-variables = ['u10', 'v10', 'd2m', 'sp']
-startyr=1980
-endyr=1985
+variables = ['ssrd', 'strd', 'str']
+startyr=2023
+endyr=2023
 month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path=f'/net/atmos/data/era5_cds/original/'
 overwrite=True

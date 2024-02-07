@@ -22,20 +22,20 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5-land_cds"
 data="era5-land"
-variable="pev"
-long_name="potential_evaporation"
-unit="m"
+variable="swvl4"
+long_name="volumetric_soil_water_layer_4"
+unit="m3 m-3"
 # aggregation method, depends on variable (mean, sum, max, min, inst)
-agg_method="sum"
+agg_method="mean"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
 # in case of accumulated variables they are accumulated over a day -> only need 00:00:00 timestep for day before
 # check how data was downloaded, true 1-hr values -> use agg_method="inst", only 00:00:00 downloaded, use agg_method="sum"
-product_type="forecast"
+product_type="analysis"
 
 ## years which need to be processed
 syear=1950
-eyear=2022
+eyear=2023
 
 archive=/net/atmos/data/${DATA}
 version=v1

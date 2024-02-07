@@ -24,14 +24,14 @@ module load cdo/2.3.0
 data_in="era5"
 data_out="era5_cds"
 variable_in="Z"
-variable_out="zg"
+variable_out="zg500"
 agg_method="mean"
 
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=1980
-eyear=1985
+syear=1971
+eyear=2022
 
 archive=/net/atmos/data/${data_out}
 version=v2
@@ -68,13 +68,15 @@ do
                 base=$(basename "$FILE")
                 new_filename=$(echo "$base" | tr H Z)
                 ncks -v ${variable_in} ${FILE} ${workdir}/${new_filename}.nc
+                new_filename2=$(echo "$new_filename" | tr Z Z500)
+                cdo chname,zg,zg500 -sellevel,50000 ${workdir}/${new_filename}.nc ${workdir}/${new_filename2}.nc
             done
             # concatenate all files for one day
-            ncrcat ${workdir}/Z${YEAR}${MONTH}${DAY}*.nc ${workdir}/Z${YEAR}${MONTH}${DAY}.nc
+            ncrcat ${workdir}/Z500${YEAR}${MONTH}${DAY}*.nc ${workdir}/Z500${YEAR}${MONTH}${DAY}.nc
             # calculate daily means
             if [[ $agg_method == "mean" ]]
             then
-                cdo daymean ${workdir}/Z${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_in}_day_${YEAR}${MONTH}${DAY}.nc
+                cdo daymean ${workdir}/Z500${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_in}500_day_${YEAR}${MONTH}${DAY}.nc
             else
                 echo "aggregation method $agg_method not implemented."
                 exit
@@ -82,6 +84,8 @@ do
             # clean up
             rm ${workdir}/Z${YEAR}${MONTH}${DAY}.nc
             rm ${workdir}/Z${YEAR}${MONTH}${DAY}*.nc
+            rm ${workdir}/Z500${YEAR}${MONTH}${DAY}.nc
+            rm ${workdir}/Z500${YEAR}${MONTH}${DAY}*.nc
 
             # change variable name to cmip name
             cdo chname,${variable_in},${variable_out} ${workdir}/${variable_in}_day_${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_out}_day_${YEAR}${MONTH}${DAY}.nc

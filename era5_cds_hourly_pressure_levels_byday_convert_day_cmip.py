@@ -6,10 +6,10 @@
 
 variables = ['t', 'u', 'v', 'r', 'cc', 'z']
 
-startyr=1981
-endyr=2023
-month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
-#month_list=['04', '05', '06', '07', '08', '09', '10', '11', '12']
+startyr=1985
+endyr=1985
+#month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+month_list=['02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 path_proc=f'/net/atmos/data/era5_cds/processed/v2/'
 overwrite=False
 time_chk=1
@@ -146,6 +146,7 @@ def main():
             print(month)
             num_days = calendar.monthrange(year, int(month))[1]
             days = [*range(1, num_days+1)]
+            print(days)
             for day in days:
                 day_str=f'{day:02d}'
                 print(day_str)
@@ -257,10 +258,12 @@ def main():
                 with xr.open_dataset(f'{name_day_work}.nc') as ds:
                     plev = ds.sizes['plev']
 
+                # add comment about daily aggregation
+                os.system(f'ncatted -O -h -a comment,global,c,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." {name_day_work}.nc {name_day_work}_ncatted.nc')
+
                 # read cmip standard_name and long_name from cmip6-cmor-tables
                 cmip_standard_name, cmip_long_name = read_cmip_info(cmip_names[v])
 
-                os.system(f'ncatted -O -h -a comment,global,c,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." {name_day_work}.nc {name_day_work}_ncatted.nc')
                 os.system(f'ncatted -O -a long_name,{varname},c,c,"{cmip_long_name}" {name_day_work}_ncatted.nc {name_day_work}_ncatted2.nc')
                 os.system(f'ncatted -O -a standard_name,{varname},c,c,"{cmip_standard_name}" {name_day_work}_ncatted2.nc {name_day_work}_ncatted3.nc')
                 os.system(f'ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,{plev} --cnk_dmn=lat,{lat_chk} --cnk_dmn=lon,{lon_chk} {name_day_work}_ncatted3.nc {name_day_work}_chunked.nc')

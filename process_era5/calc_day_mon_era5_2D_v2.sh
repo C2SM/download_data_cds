@@ -22,17 +22,17 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5_cds"
 data="era5"
-variable_in="str"
-variable_out="str"
+variable_in="tcc"
+variable_out="clt"
 # aggregation method, depends on variable (mean, sum, max, min)
-agg_method="sum"
+agg_method="mean"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
-product_type="forecast"
+product_type="analysis"
 
 ## years which need to be processed
-syear=1980
-eyear=1985
+syear=1986
+eyear=2022
 
 archive=/net/atmos/data/${DATA}
 version=v2
@@ -141,13 +141,11 @@ do
                 cdo daymin ${tmp} ${name_day_work}.nc
                 ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc  
             fi
-            # shift longitude to -180 to 180
-            cdo sellonlatbox,-180,179.5,-90,90 ${name_day_work}_ncatted.nc ${name_day_work}_sellonlat.nc
 
             if [[ ${plev} -gt 0 ]]; then
-                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,${plev} --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_sellonlat.nc ${name_day_work}_chunked.nc
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=plev,${plev} --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
             else
-                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_sellonlat.nc ${name_day_work}_chunked.nc
+                ncks -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,${lat_ck} --cnk_dmn=lon,${lon_ck} ${name_day_work}_ncatted.nc ${name_day_work}_chunked.nc
             fi
             # rename variable
             if [[ ${VARI} != ${variable_out} ]]; then
@@ -168,7 +166,7 @@ do
         done
 
         # clean up workdir
-        #rm ${workdir}/*
+        rm ${workdir}/*
     done
 
 done
