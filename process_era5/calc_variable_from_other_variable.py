@@ -23,12 +23,12 @@ from datetime import datetime
 ####################
 
 indir = "/net/atmos/data/era5_cds/processed/v2/"
-variables_in = ["strd", "rls"]
-variable_out = "rlds"
+variables_in = ["d2m", "tas"]
+variable_out = "hurs"
 freq = "day"
 grid = "native"
-syear=1986
-eyear=2022
+syear=1941
+eyear=1979
 time_chk=1
 lat_chk=46
 lon_chk=22
@@ -132,101 +132,104 @@ def main():
 	# read first variable
 	var = variables_in[0]
 
-	data_path = f'{indir}{var}/{freq}/{grid}/*'
-	filename = f'{var}_{freq}_era5_*.nc'
-	filelist = sorted(glob.glob(f'{data_path}/{filename}'))
-	if len(filelist) == 0:
-		logger.error('No matching files found for %s!', data_path)
+	for year in range(syear, eyear + 1):
+		logger.info(f"Processing year {year}.")
 
-	logger.info('%s files found, start processing:', len(filelist))
-	for ifile in filelist:
-		logger.info("Processing file %s", ifile)
-		# find matching file with second variable
-		ifile_2 = ifile.replace(var, variables_in[1])
-		if os.path.isfile(ifile_2):
-			logger.info("second file found")
-		else:
-			logger.warning("No matching second file found, continuing.")
-			continue
+		data_path = f'{indir}{var}/{freq}/{grid}/{year}'
+		filename = f'{var}_{freq}_era5_*.nc'
+		filelist = sorted(glob.glob(f'{data_path}/{filename}'))
+		if len(filelist) == 0:
+			logger.error('No matching files found for %s!', data_path)
 
-		try:
-			ds_1 = xr.open_dataset(ifile, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk})
-			logger.info('Open data ifile')
-		except OSError:
-			logger.warning('Could not open file %s, continuing.', ifile)
-			continue
-		try:
-			ds_2 = xr.open_dataset(ifile_2, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk})
-			logger.info('Open data ifile_2')
-		except OSError:
-			logger.warning('Could not open file %s, continuing.', ifile_2)
-			continue
-
-		if len(variables_in) > 2:
-			# find matching file with third variable
-			ifile_3 = ifile.replace(var, variables_in[2])
-			if os.path.isfile(ifile_3):
-				logger.info("third file found")
+		logger.info('%s files found, start processing:', len(filelist))
+		for ifile in filelist:
+			logger.info("Processing file %s", ifile)
+			# find matching file with second variable
+			ifile_2 = ifile.replace(var, variables_in[1])
+			if os.path.isfile(ifile_2):
+				logger.info("second file found")
 			else:
-				logger.warning("No matching third file found, continuing.")
+				logger.warning("No matching second file found, continuing.")
+				continue
+
+			try:
+				ds_1 = xr.open_dataset(ifile, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk}, mask_and_scale=True)
+				logger.info('Open data ifile')
+			except OSError:
+				logger.warning('Could not open file %s, continuing.', ifile)
 				continue
 			try:
-				ds_3 = xr.open_dataset(ifile_3, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk})
-				logger.info('Open data ifile_3')
+				ds_2 = xr.open_dataset(ifile_2, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk}, mask_and_scale=True)
+				logger.info('Open data ifile_2')
 			except OSError:
-				logger.warning('Could not open file %s, continuing.', ifile_3)
+				logger.warning('Could not open file %s, continuing.', ifile_2)
 				continue
-			
 
-		if variable_out == 'sfcWind':
-			logger.info('Processing variable sfcWind')
+			if len(variables_in) > 2:
+				# find matching file with third variable
+				ifile_3 = ifile.replace(var, variables_in[2])
+				if os.path.isfile(ifile_3):
+					logger.info("third file found")
+				else:
+					logger.warning("No matching third file found, continuing.")
+					continue
+				try:
+					ds_3 = xr.open_dataset(ifile_3, chunks={'time':time_chk, 'lat':lat_chk, 'lon':lon_chk}, mask_and_scale=True)
+					logger.info('Open data ifile_3')
+				except OSError:
+					logger.warning('Could not open file %s, continuing.', ifile_3)
+					continue
+				
 
-			da_out = compute_wind_from_u_v(ds_1["uas"], ds_2["vas"])
-			standard_name="wind_speed"
-			long_name="Near-Surface Wind Speed"
-			unit="m s-1"
-		elif variable_out=="rlds":
-			logger.info('Processing variable rlds')
+			if variable_out == 'sfcWind':
+				logger.info('Processing variable sfcWind')
 
-			da_out = calculate_rlds_from_strd_str(ds_1["strd"], ds_2["rls"])
-			standard_name="surface_downwelling_longwave_flux_in_air"
-			long_name="Surface Downwelling Longwave Radiation"
-			unit="W m-2"
-		elif variable_out=="hurs":
-			logger.info('Processing variable hurs')
+				da_out = compute_wind_from_u_v(ds_1["uas"], ds_2["vas"])
+				standard_name="wind_speed"
+				long_name="Near-Surface Wind Speed"
+				unit="m s-1"
+			elif variable_out=="rlds":
+				logger.info('Processing variable rlds')
 
-			da_out = calculate_relative_humidity(ds_1["d2m"], ds_2["tas"])
-			standard_name="relative_humidity"
-			long_name="Near-Surface Relative Humidity"
-			unit="%"
-		else:
-			logger.error("Not implemented output variable %s", variable_out)
+				da_out = calculate_rlds_from_strd_str(ds_1["strd"], ds_2["rls"])
+				standard_name="surface_downwelling_longwave_flux_in_air"
+				long_name="Surface Downwelling Longwave Radiation"
+				unit="W m-2"
+			elif variable_out=="hurs":
+				logger.info('Processing variable hurs')
 
-		ds_2.close()
-		if len(variables_in) > 2:
-			ds_3.close()
-			
-		try:
-			cell_methods = ds_1[var].attrs["cell_methods"]
-		except KeyError:
-			logger.warning("No cell_methods attribute!")
-			cell_methods =  "unknown"
+				da_out = calculate_relative_humidity(ds_1["d2m"], ds_2["tas"])
+				standard_name="relative_humidity"
+				long_name="Near-Surface Relative Humidity"
+				unit="%"
+			else:
+				logger.error("Not implemented output variable %s", variable_out)
 
-		dict_attr ={"standard_name": standard_name, "long_name": long_name, "units": unit,
-					"cell_methods": cell_methods,
-					"_FillValue": 1.e+20}
+			ds_2.close()
+			if len(variables_in) > 2:
+				ds_3.close()
+				
+			try:
+				cell_methods = ds_1[var].attrs["cell_methods"]
+			except KeyError:
+				logger.warning("No cell_methods attribute!")
+				cell_methods =  "unknown"
 
-		ds_out = da_out.assign_attrs(dict_attr).to_dataset(name=variable_out)
-		filename_out = ifile.replace(var , variable_out)
+			dict_attr ={"standard_name": standard_name, "long_name": long_name, "units": unit,
+						"cell_methods": cell_methods,
+						"_FillValue": 1.e+20}
 
-		year = filename_out.split('/')[10]
-		outdir_year = f'{outdir}{year}'
+			ds_out = da_out.assign_attrs(dict_attr).to_dataset(name=variable_out)
+			filename_out = ifile.replace(var , variable_out)
 
-		if not os.path.exists(outdir_year):
-			os.makedirs(outdir_year)
+			year = filename_out.split('/')[10]
+			outdir_year = f'{outdir}{year}'
 
-		ds_out.to_netcdf(filename_out, encoding={variable_out: {"chunksizes": (time_chk, lat_chk, lon_chk)}})
-		logger.info("Data written to %s", filename_out)
+			if not os.path.exists(outdir_year):
+				os.makedirs(outdir_year)
+
+			ds_out.to_netcdf(filename_out, encoding={variable_out: {"chunksizes": (time_chk, lat_chk, lon_chk)}})
+			logger.info("Data written to %s", filename_out)
 
 	dt = datetime.now() - t0
 	logger.info('Success! All files processed, total duration: %s', dt)
