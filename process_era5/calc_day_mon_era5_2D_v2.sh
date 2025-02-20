@@ -1,6 +1,6 @@
 #!/bin/bash
 # File Name: calc_day_mon.sh
-# Author: ruth.lorenz@c2sm.ethz.ch 
+# Author: ruth.lorenz@c2sm.ethz.ch
 # Created: 13/01/22
 # Modified: Wed Sep 13 14:38:03 2023
 # Purpose : calculate daily and monthly means, sums, etc.
@@ -31,8 +31,8 @@ agg_method="mean"
 product_type="analysis"
 
 ## years which need to be processed
-syear=1986
-eyear=2022
+syear=2023
+eyear=2023
 
 archive=/net/atmos/data/${DATA}
 version=v2
@@ -81,7 +81,7 @@ do
                     echo "The dimension 'plev' does not exist in the NetCDF file."
                     plev=0
                 fi
-            fi  
+            fi
 
 
             if [[ ${product_type} = "forecast" ]]; then
@@ -94,7 +94,7 @@ do
                     MONTH1=$(echo $MONTH | bc)
                     let NEWMONTH=MONTH1+1
                     MONTH2=$(printf "%02d" $NEWMONTH)
-                fi                
+                fi
                 name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
 
                 # extract first timestep from next day and concatenate with day before
@@ -119,7 +119,7 @@ do
 
             if [ ${agg_method} = "mean" ]; then
                 cdo daymean ${tmp} ${name_day_work}.nc
-                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc               
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as mean over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc
             elif [ ${agg_method} = "sum" ]; then
                 # variables which are sums over days should be forecast
                 if [[ ${product_type} != "forecast" ]]; then
@@ -132,14 +132,14 @@ do
                 if [[ ${variable_in} = "ssrd"  ||  ${variable_in} = "strd"  ||  ${variable_in} = "str" ]]; then
                     cdo divc,86400  ${name_day_work}.nc ${name_day_work}_divc.nc
                     ncatted -O -a units,${VARI},o,c,"W m-2" ${name_day_work}_divc.nc ${name_day_work}.nc
-                fi 
-                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as sum over 01:00:00 to 00:00:00 next day." ${name_day_work}.nc ${name_day_work}_ncatted.nc                
+                fi
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as sum over 01:00:00 to 00:00:00 next day." ${name_day_work}.nc ${name_day_work}_ncatted.nc
             elif [ ${agg_method} = "max" ]; then
                 cdo daymax ${tmp} ${name_day_work}.nc
-                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as max over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc                
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as max over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc
             elif [ ${agg_method} = "min" ]; then
                 cdo daymin ${tmp} ${name_day_work}.nc
-                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc  
+                ncatted -O -h -a comment,global,m,c,"Daily data aggregated as min over calendar day 00:00:00 to 23:00:00." ${name_day_work}.nc ${name_day_work}_ncatted.nc
             fi
 
             if [[ ${plev} -gt 0 ]]; then
@@ -158,7 +158,7 @@ do
                 cdo monmean ${name_day} ${name_mon}
             elif [[ ${agg_method} = "sum" ]]; then
                 cdo monsum ${name_day} ${name_mon}
-            elif [[ ${agg_method} = "max" ]]; then    
+            elif [[ ${agg_method} = "max" ]]; then
                 cdo monmax ${name_day} ${name_mon}
             elif [[ ${agg_method} = "min" ]]; then
                 cdo monmin ${name_day} ${name_mon}

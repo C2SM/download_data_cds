@@ -2,7 +2,7 @@
 # File Name: calc_day_mon.sh
 # Author: ruth.lorenz@c2sm.ethz.ch 
 # Created: 13/01/22
-# Modified: Wed Sep 13 14:38:03 2023
+# Modified: Mon Mar 25 13:46:34 2024
 # Purpose : calculate daily and monthly means, sums, etc.
 #           from original 1hr data
 
@@ -23,16 +23,16 @@ module load cdo/2.3.0
 DATA="era5_cds"
 data="era5"
 variable_in="2t"
-variable_out="tasmin"
+variable_out="tasmax"
 # aggregation method, depends on variable (mean, sum, max, min)
-agg_method="min"
+agg_method="max"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
 product_type="analysis"
 
 ## years which need to be processed
-syear=1986
-eyear=2022
+syear=1940
+eyear=1979
 
 archive=/net/atmos/data/${DATA}
 version=v2
@@ -163,7 +163,7 @@ do
         done
 
         # clean up workdir
-        #rm ${workdir}/*
+        rm ${workdir}/*
     done
 
 done

@@ -23,15 +23,15 @@ module load cdo/2.3.0
 ##-------------------- ##
 data_in="era5"
 data_out="era5_cds"
-variable_in="TCC"
-variable_out="clt"
+variable_in="MSL"
+variable_out="psl"
 agg_method="mean"
 
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=1980
-eyear=1985
+syear=1950
+eyear=2022
 
 archive=/net/atmos/data/${data_out}
 version=v2
@@ -101,15 +101,16 @@ do
         # concatenate all days per month and chunk data into small lat,lon blocks
         ncrcat -O -4 -D 4 --cnk_plc=g3d --cnk_dmn=time,1 --cnk_dmn=lat,46 --cnk_dmn=lon,22 ${workdir}/${variable_out}_day_${YEAR}${MONTH}*.nc  ${name_day}
 
+        if [[ $agg_method == "mean" ]]
+        then
+            cdo monmean ${name_day} ${name_mon}
+        else
+            echo "aggregation method $agg_method not implemented."
+            exit
+        fi
     done
 
-    if [[ $agg_method == "mean" ]]
-    then
-        cdo monmean ${name_day} ${name_mon}
-    else
-        echo "aggregation method $agg_method not implemented."
-        exit
-    fi        
+       
 done
 
 }

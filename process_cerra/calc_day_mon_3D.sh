@@ -21,13 +21,13 @@ module load cdo
 ## user specifications ##
 ##-------------------- ##
 
-variable="gph500"
+variable="t"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="mean"
 
 ## years which need to be processed
-syear=1986
-eyear=2020
+syear=1994
+eyear=1994
 
 archive=/net/atmos/data/cerra
 version=v1
@@ -73,8 +73,8 @@ do
         cdo mergetime ${workdir}/${VARI}_mon_cerra_??${YEAR}.nc ${outdir}/${VARI}/mon/native/${VARI}_mon_cerra_${YEAR}.nc
 
         # Delete files by month
-        rm ${workdir}/${VARI}_day_cerra_??${YEAR}.nc
-        rm ${workdir}/${VARI}_mon_cerra_??${YEAR}.nc
+        #rm ${workdir}/${VARI}_day_cerra_??${YEAR}.nc
+        #rm ${workdir}/${VARI}_mon_cerra_??${YEAR}.nc
     done
 
 done

@@ -1,6 +1,6 @@
 #!/bin/bash
 # File Name: calc_day_mon.sh
-# Author: ruth.lorenz@c2sm.ethz.ch 
+# Author: ruth.lorenz@c2sm.ethz.ch
 # Created: 13/01/22
 # Modified: Wed Sep 13 14:38:03 2023
 # Purpose : calculate daily and monthly means, sums, etc.
@@ -20,18 +20,18 @@ module load cdo
 ##---------------------##
 ## user specifications ##
 ##-------------------- ##
-DATA="era5-land_cds"
-data="era5-land"
-variable="snom"
+DATA="era5_cds"
+data="era5"
+variable="tp"
 # aggregation method, depends on variable (mean, sum, max, min)
-agg_method="mean"
+agg_method="sum"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
-product_type="analysis"
+product_type="forecast"
 
 ## years which need to be processed
-syear=2022
-eyear=2022
+syear=2023
+eyear=2023
 
 archive=/net/atmos/data/${DATA}
 version=v1
@@ -74,7 +74,7 @@ do
                     MONTH1=$(echo $MONTH | bc)
                     let NEWMONTH=MONTH1+1
                     MONTH2=$(printf "%02d" $NEWMONTH)
-                fi                
+                fi
 
                 name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
                 # extract first timestep from next day and concatenate with day before
@@ -97,7 +97,7 @@ do
             fi
 
             if [ ${agg_method} = "mean" ]; then
-                cdo daymean ${tmp} ${name_day_work}               
+                cdo daymean ${tmp} ${name_day_work}
             elif [ ${agg_method} = "sum" ]; then
                 # variables which are sums over days should be forecast
                 if [[ ${product_type} != "forecast" ]]; then
@@ -105,11 +105,11 @@ do
                     echo "Variables which are sums over days should be forecast."
                     exit
                 fi
-                cdo daysum ${tmp} ${name_day_work}                
+                cdo daysum ${tmp} ${name_day_work}
             elif [ ${agg_method} = "max" ]; then
-                cdo daymax ${tmp} ${name_day_work}                
+                cdo daymax ${tmp} ${name_day_work}
             elif [ ${agg_method} = "min" ]; then
-                cdo daymin ${tmp} ${name_day_work}  
+                cdo daymin ${tmp} ${name_day_work}
             fi
         done
         cdo mergetime ${workdir}/${VARI}_day_${data}_${YEAR}??.nc ${name_day}
@@ -117,7 +117,7 @@ do
             cdo monmean ${name_day} ${name_mon}
         elif [[ ${agg_method} = "sum" ]]; then
             cdo monsum ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "max" ]]; then    
+        elif [[ ${agg_method} = "max" ]]; then
             cdo monmax ${name_day} ${name_mon}
         elif [[ ${agg_method} = "min" ]]; then
             cdo monmin ${name_day} ${name_mon}
