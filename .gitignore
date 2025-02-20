@@ -6,3 +6,5 @@ test_*.py
 .idea
 
 */logfiles/*
+._*
+*.log
