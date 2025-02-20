@@ -3,9 +3,9 @@
 import os
 import cdsapi
 
-var='sp'
-long_name='surface_pressure'
-startyr=1986
+var='10si'
+long_name='10m_wind_speed'
+startyr=1985
 endyr=2021
 archive=f'/net/atmos/data/cerra/original/{var}'
 
