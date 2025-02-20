@@ -4,12 +4,13 @@
 #                         U S E R  *  O P T I O N S
 # *******************************************************************************
 
-variables = ['ssrd', 'strd', 'str']
-startyr=2023
-endyr=2023
-month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+variables = ['tp']
+startyr=2024
+endyr=2024
+#month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
+month_list=['01']
 path=f'/net/atmos/data/era5_cds/original/'
-overwrite=True
+overwrite=False
 
 # -------------------------------------------------
 # Getting libraries and utilities
@@ -28,7 +29,7 @@ logging.basicConfig(format='%(asctime)s | %(levelname)s : %(message)s',
 logger = logging.getLogger()
 
 # -------------------------------------------------
-# Loading ERA5 variables's information as 
+# Loading ERA5 variables's information as
 # python Dictionary from JSON file
 # -------------------------------------------------
 long_names = list()
@@ -71,40 +72,43 @@ for year in range(startyr, endyr+1):
         if (os.access(archive, os.F_OK) == False):
             os.makedirs(archive)
         grib_file = f'{archive}/variables_1hr_era5_{year}{month}.grib'
-        if not os.path.isfile(f'{grib_file}') or overwrite:   
-            c.retrieve(
-                'reanalysis-era5-single-levels',
-                {
-                    'product_type': 'reanalysis',
-                    'format': 'grib',
-                    'variable': long_names,
-                    'year': f'{year}',
-                    'month': f'{month}',
-                    'day': [
-                        '01', '02', '03',
-                        '04', '05', '06',
-                        '07', '08', '09',
-                        '10', '11', '12',
-                        '13', '14', '15',
-                        '16', '17', '18',
-                        '19', '20', '21',
-                        '22', '23', '24',
-                        '25', '26', '27',
-                        '28', '29', '30',
-                        '31',
-                    ],
-                    'time': [
-                        '00:00', '01:00', '02:00',
-                        '03:00', '04:00', '05:00',
-                        '06:00', '07:00', '08:00',
-                        '09:00', '10:00', '11:00',
-                        '12:00', '13:00', '14:00',
-                        '15:00', '16:00', '17:00',
-                        '18:00', '19:00', '20:00',
-                        '21:00', '22:00', '23:00',
-                    ],
-                },
-            f'{grib_file}')
+        if not os.path.isfile(f'{grib_file}') or overwrite:
+            client = cdsapi.Client()
+
+            dataset = "reanalysis-era5-single-levels"
+            request = {
+                "product_type": ["reanalysis"],
+                "variable": long_names,
+                "year": [f'{year}'],
+                "month": [f'{month}'],
+                "day": [
+                    "01", "02", "03",
+                    "04", "05", "06",
+                    "07", "08", "09",
+                    "10", "11", "12",
+                    "13", "14", "15",
+                    "16", "17", "18",
+                    "19", "20", "21",
+                    "22", "23", "24",
+                    "25", "26", "27",
+                    "28", "29", "30",
+                    "31"
+                ],
+                "time": [
+                    "00:00", "01:00", "02:00",
+                    "03:00", "04:00", "05:00",
+                    "06:00", "07:00", "08:00",
+                    "09:00", "10:00", "11:00",
+                    "12:00", "13:00", "14:00",
+                    "15:00", "16:00", "17:00",
+                    "18:00", "19:00", "20:00",
+                    "21:00", "22:00", "23:00"
+                ],
+                "data_format": "grib",
+                "download_format": "unarchived"
+            }
+
+            client.retrieve(dataset, request, grib_file)
 
         # convert grib file to netcdf
         os.system(f'cdo -f nc4 copy {grib_file} {workdir}/variables_1hr_era5_{year}{month}.nc')
@@ -131,4 +135,4 @@ for year in range(startyr, endyr+1):
                 s=+1
         if s == len(variables):
             logger.info('All variables were properly processed, deleting grib file.')
-            os.system(f'rm {grib_file}')        
+            os.system(f'rm {grib_file}')
