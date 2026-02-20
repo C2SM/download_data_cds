@@ -2,7 +2,7 @@
 # File Name: regrid_to_g025.sh
 # Author: Ruth Lorenz
 # Created: 30/08/2023
-# Modified: Fri Jan 31 14:09:53 2025
+# Modified: Fri Mar 14 16:03:18 2025
 # Purpose : regrid ERA5 data from CDS to same grid as
 #           cmip6-ng archive
 
@@ -21,11 +21,11 @@ module load cdo
 ## user specifications ##
 ##-------------------- ##
 DATA="era5_cds"
-variable="tos"
+variable="psl"
 freq="mon"
 grid="g025"
 method="remapcon2"
-syear=1950
+syear=1940
 eyear=2024
 
 archive=/net/atmos/data/${DATA}

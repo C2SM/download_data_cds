@@ -1,8 +1,8 @@
 #!/bin/bash
 # File Name: calc_day_mon.sh
-# Author: ruth.lorenz@c2sm.ethz.ch 
+# Author: ruth.lorenz@c2sm.ethz.ch
 # Created: 13/01/22
-# Modified: Wed Sep 13 14:38:03 2023
+# Modified: Wed Mar 26 16:58:56 2025
 # Purpose : calculate daily and monthly means, sums, etc.
 #           from original 1hr data
 
@@ -22,20 +22,21 @@ module load cdo/2.3.0
 ##-------------------- ##
 DATA="era5-land_cds"
 data="era5-land"
-variable="swvl4"
-long_name="volumetric_soil_water_layer_4"
-unit="m3 m-3"
+variable="smlt"
+variable_out="snom"
+long_name="snowmelt"
+unit="m of water equivalent"
 # aggregation method, depends on variable (mean, sum, max, min, inst)
-agg_method="mean"
+agg_method="sum"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 23:00:00 to 24:00:00"
 # in case of accumulated variables they are accumulated over a day -> only need 00:00:00 timestep for day before
 # check how data was downloaded, true 1-hr values -> use agg_method="inst", only 00:00:00 downloaded, use agg_method="sum"
-product_type="analysis"
+product_type="forecast"
 
 ## years which need to be processed
-syear=1950
-eyear=2023
+syear=2023
+eyear=2024
 
 archive=/net/atmos/data/${DATA}
 version=v1
@@ -43,9 +44,10 @@ version=v1
 outdir=${archive}/processed/${version}
 
 
-for VARI in $variable
+for VARI in ${variable_out}
 do
     echo "Processing variable $VARI, $product_type, with aggregation method $agg_method."
+    VARI1=${variable}
     workdir=${outdir}/work/${VARI}
     ## create directories if do not exist yet
     mkdir -p ${outdir}/${VARI}/day/native
@@ -64,7 +66,7 @@ do
             echo $MONTH
             name_day_work=${workdir}/${VARI}_day_${data}_${YEAR}${MONTH}.nc
 
-            name_in1=${archive}/original/${VARI}/1hr/${YEAR}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
+            name_in1=${archive}/original/${VARI1}/1hr/${YEAR}/${VARI1}_1hr_${data}_${YEAR}${MONTH}.nc
             tmp=${workdir}/tmpfile_${YEAR}${MONTH}.nc
 
 
@@ -78,9 +80,9 @@ do
                     MONTH1=$(echo $MONTH | bc)
                     let NEWMONTH=MONTH1+1
                     MONTH2=$(printf "%02d" $NEWMONTH)
-                fi                
+                fi
 
-                name_in2=${archive}/original/${VARI}/1hr/${YEAR2}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}.nc
+                name_in2=${archive}/original/${VARI1}/1hr/${YEAR2}/${VARI1}_1hr_${data}_${YEAR2}${MONTH2}.nc
                 # extract first timestep from next day and concatenate with day before
                 cdo seltimestep,1,1 ${name_in2} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc
                 cdo mergetime ${name_in1} ${workdir}/${VARI}_1hr_${data}_${YEAR2}${MONTH2}_1.nc ${workdir}/${VARI}_1hr_${data}_${YEAR}${MONTH}.nc
@@ -101,7 +103,7 @@ do
             fi
 
             if [ ${agg_method} = "mean" ]; then
-                cdo daymean ${tmp} ${name_day_work}               
+                cdo daymean ${tmp} ${name_day_work}
             elif [ ${agg_method} = "sum" ]; then
                 # variables which are sums over days should be forecast
                 if [[ ${product_type} != "forecast" ]]; then
@@ -109,9 +111,9 @@ do
                     echo "Variables which are sums over days should be forecast."
                     exit
                 fi
-                cdo daysum ${tmp} ${name_day_work}                
+                cdo daysum ${tmp} ${name_day_work}
             elif [ ${agg_method} = "max" ]; then
-                cdo daymax ${tmp} ${name_day_work}                
+                cdo daymax ${tmp} ${name_day_work}
             elif [ ${agg_method} = "min" ]; then
                 cdo daymin ${tmp} ${name_day_work}
             elif [ ${agg_method} = "inst" ]; then
@@ -121,6 +123,9 @@ do
                     exit
                 fi
                 cdo daymean -seltime,23:59:59 ${tmp} ${name_day_work}
+            fi
+            if [[ ${variable} != ${variable_out} ]]; then
+                cdo chname,${variable},${variable_out} ${name_day_work} ${name_day_work}
             fi
         done
         cdo mergetime ${workdir}/${VARI}_day_${data}_${YEAR}??.nc ${workdir}/${VARI}_day_${data}_${YEAR}_merge.nc
@@ -132,7 +137,7 @@ do
             cdo monmean ${name_day} ${name_mon}
         elif [ ${agg_method} = "sum" ]; then
             cdo monsum ${name_day} ${name_mon}
-        elif [ ${agg_method} = "max" ]; then    
+        elif [ ${agg_method} = "max" ]; then
             cdo monmax ${name_day} ${name_mon}
         elif [ ${agg_method} = "min" ]; then
             cdo monmin ${name_day} ${name_mon}

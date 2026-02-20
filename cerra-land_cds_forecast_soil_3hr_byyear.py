@@ -1,6 +1,8 @@
 import os
 import cdsapi
 
+from convert_grib_netcdf import grib_to_netcdf
+
 c = cdsapi.Client()
 
 var='vsw'
@@ -55,6 +57,7 @@ for year in range(startyr, endyr+1):
             'leadtime_hour': '3',
         },
         f'{archive}/{var}_3hr_cerra-land_{year}.grib')
-    
-    os.system(f'cdo -f nc copy {archive}/{var}_3hr_cerra-land_{year}.grib {archive}/{var}_3hr_cerra-land_{year}.nc')
-    os.system(f'rm {archive}/{var}_3hr_cerra-land_{year}.grib')
+
+    #os.system(f'cdo -f nc copy {archive}/{var}_3hr_cerra-land_{year}.grib {archive}/{var}_3hr_cerra-land_{year}.nc')
+    #os.system(f'rm {archive}/{var}_3hr_cerra-land_{year}.grib')
+    grib_to_netcdf(f'{archive}/{var}_3hr_cerra-land_{year}.grib', f'{archive}/{var}_3hr_cerra-land_{year}.nc')

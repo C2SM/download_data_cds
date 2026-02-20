@@ -2,11 +2,12 @@
 
 import os
 import cdsapi
+from convert_grib_netcdf import grib_to_netcdf
 
 var='tp'
 long_name='total_precipitation'
-startyr=1986
-endyr=2021
+startyr=2023
+endyr=2023
 month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 archive=f'/net/atmos/data/cerra/original/{var}'
 workdir=f'/net/atmos/data/cerra/original/{var}/work'
@@ -56,14 +57,12 @@ for year in range(startyr, endyr+1):
             "data_format": "grib"
         }
         grib_file= f'{workdir}/{var}_1hr_cerra_{year}{month}.grib'
-        #tmpfile = f'{workdir}/{var}_1hr_cerra_{year}{month}_setgridregular.grib'
         ncfile = f'{archive}/{var}_1hr_cerra_{year}{month}.nc'
         if not os.path.isfile(grib_file) or overwrite:
             client = cdsapi.Client()
             client.retrieve(dataset, request, grib_file)
 
         if not os.path.isfile(ncfile) or overwrite:
-            #os.system(f"cdo -t ecmwf -setgridtype,regular {grib_file} {tmpfile}")
-            #os.system(f"grib_to_netcdf -o  {ncfile} {grib_file}")
-            os.system(f"cdo -f nc copy {grib_file} {ncfile}")
+            #os.system(f"cdo -f nc copy {grib_file} {ncfile}")
             #os.system(f'rm {grib_file}')
+            grib_to_netcdf(grib_file, ncfile, variable_name=var)

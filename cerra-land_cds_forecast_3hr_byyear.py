@@ -1,11 +1,13 @@
 import os
 import cdsapi
 
+from convert_grib_netcdf import grib_to_netcdf
+
 c = cdsapi.Client()
 
-var='perc'
-long_name='percolation'
-startyr=1985
+var='sro'
+long_name='surface_runoff'
+startyr=2021
 endyr=2021
 archive=f'/net/atmos/data/cerra-land/original/{var}'
 
@@ -16,6 +18,7 @@ dataset = "reanalysis-cerra-land"
 
 for year in range(startyr, endyr+1):
     filename = f'{archive}/{var}_3hr_cerra-land_{year}'
+
     request = {
         'format': 'grib',
         'variable': [f'{long_name}'],
@@ -53,5 +56,6 @@ for year in range(startyr, endyr+1):
     client = cdsapi.Client()
     client.retrieve(dataset, request, f'{filename}.grib')
 
-    os.system(f'cdo -f nc copy {filename}.grib {filename}.nc')
-    os.system(f'rm {filename}.grib')
+    #os.system(f'cdo -f nc copy {filename}.grib {filename}.nc')
+    grib_to_netcdf(f'{filename}.grib', f'{filename}.nc', variable_name=var)
+    #os.system(f'rm {filename}.grib')

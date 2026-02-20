@@ -2,7 +2,7 @@
 # File Name: process_from_era5_atmosdyn_H_files.sh
 # Author:  Ruth Lorenz
 # Created: 27/09/2023
-# Modified: Wed Sep 27 17:17:03 2023
+# Modified: Thu Mar  6 11:19:49 2025
 # Purpose : process data from files stored in /net/thermo/atmosdyn/era5/cdf
 # 	(data downloaded by Michael Sprenger), e.g. temperature
 # 	at plev (T)  
@@ -30,8 +30,8 @@ agg_method="mean"
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=1971
-eyear=2022
+syear=1981
+eyear=1981
 
 archive=/net/atmos/data/${data_out}
 version=v1

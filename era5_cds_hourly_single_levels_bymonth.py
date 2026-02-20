@@ -4,13 +4,13 @@
 #                         U S E R  *  O P T I O N S
 # *******************************************************************************
 
-variables = ['tp']
-startyr=2024
-endyr=2024
+variables = ['2t']
+startyr=2025
+endyr=2025
 #month_list=['01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12']
 month_list=['01']
 path=f'/net/atmos/data/era5_cds/original/'
-overwrite=False
+overwrite=True
 
 # -------------------------------------------------
 # Getting libraries and utilities

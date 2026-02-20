@@ -1,8 +1,8 @@
 #!/bin/bash
 # File Name: calc_day_mon_*D.sh
-# Author: ruth.lorenz@c2sm.ethz.ch 
+# Author: ruth.lorenz@c2sm.ethz.ch
 # Created: 13/01/22
-# Modified: Fri Jul 14 17:43:30 2023
+# Modified: Thu Jun 26 15:54:52 2025
 # Purpose : calculate daily and monthly means, sums, etc.
 #           from original 3hr data for 3D variables (pa levels)
 
@@ -21,13 +21,13 @@ module load cdo
 ## user specifications ##
 ##-------------------- ##
 
-variable="t"
+variable="gph300"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="mean"
 
 ## years which need to be processed
-syear=1994
-eyear=1994
+syear=1985
+eyear=2023
 
 archive=/net/atmos/data/cerra
 version=v1

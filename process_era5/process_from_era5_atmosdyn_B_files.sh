@@ -5,7 +5,7 @@
 # Modified: Fri Dec  8 17:29:09 2023
 # Purpose : process data from files stored in /net/thermo/atmosdyn/era5/cdf
 # 	(data downloaded by Michael Sprenger), e.g. temperature
-# 	at surface (T)  
+# 	at surface (T)
 
 ###-------------------------------------------------------
 printf -v date '%(%Y-%m-%d_%H%M%S)T' -1
@@ -30,8 +30,8 @@ agg_method="mean"
 path_in="/net/thermo/atmosdyn/era5/cdf"
 
 ## years which need to be processed
-syear=1950
-eyear=2022
+syear=1940
+eyear=2024
 
 archive=/net/atmos/data/${data_out}
 version=v2
@@ -85,7 +85,7 @@ do
 
             # change variable name to cmip name
             cdo chname,${variable_in},${variable_out} ${workdir}/${variable_in}_day_${YEAR}${MONTH}${DAY}.nc ${workdir}/tmp_${variable_out}_day_${YEAR}${MONTH}${DAY}.nc
-        
+
             if [[ $agg_method != "sum" ]]
             then
                 comment="Daily data aggregated as ${agg_method} over calendar day 00:00:00 to 23:00:00.\n"
@@ -94,7 +94,7 @@ do
                         Time was shifted by -1sec beforehand to include all data from 1:00:00 to 24:00:00 \n
                         sinde fluxes are aggregated over the hour in original data.\n"
             fi
-            ncatted -O -a comment,global,a,c,"$comment" ${workdir}/tmp_${variable_out}_day_${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_out}_day_${YEAR}${MONTH}${DAY}.nc 
+            ncatted -O -a comment,global,a,c,"$comment" ${workdir}/tmp_${variable_out}_day_${YEAR}${MONTH}${DAY}.nc ${workdir}/${variable_out}_day_${YEAR}${MONTH}${DAY}.nc
 
             rm ${workdir}/tmp_*.nc
         done
@@ -110,7 +110,7 @@ do
         fi
     done
 
-       
+
 done
 
 }
