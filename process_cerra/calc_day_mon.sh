@@ -1,8 +1,8 @@
 #!/bin/bash
 # File Name: calc_day_mon.sh
-# Author: ruth.lorenz@c2sm.ethz.ch 
+# Author: ruth.lorenz@c2sm.ethz.ch
 # Created: 13/01/22
-# Modified: Fri Jul 14 17:42:01 2023
+# Modified: Mon Jun 23 09:09:04 2025
 # Purpose : calculate daily and monthly means, sums, etc.
 #           from original 3hr data
 
@@ -20,13 +20,13 @@ module load cdo
 ##---------------------##
 ## user specifications ##
 ##-------------------- ##
-data="cerra"
-variable="gph500"
+data="cerra-land"
+variable="sd"
 # aggregation method, depends on variable (mean, sum, max, min)
 agg_method="mean"
 # forecast or analysis? in case of forecast time needs to be shifted
 # because time "date 00:00:00" contains forecast data of "day before 21:00:00 to 24:00:00"
-product_type="analysis"
+product_type="forecast"
 
 ## years which need to be processed
 syear=1985
@@ -35,8 +35,8 @@ eyear=2020
 archive=/net/atmos/data/${data}
 version=v1
 
-outdir=${archive}/processed/${version}
-
+#outdir=${archive}/processed/${version}
+outdir=/net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/${version}
 
 for VARI in $variable
 do
@@ -54,7 +54,7 @@ do
         name_in=${archive}/original/${VARI}/${VARI}_3hr_${data}_${YEAR}.nc
         name_day=${outdir}/${VARI}/day/native/${VARI}_day_${agg_method}_${data}_${YEAR}.nc
         name_mon=${outdir}/${VARI}/mon/native/${VARI}_mon_${agg_method}_${data}_${YEAR}.nc
-        tmp=${workdir}/tmpfile.nc
+        tmp=${workdir}/tmpfile_${YEAR}.nc
 
         if [[ ${product_type} = "forecast" ]]; then
             # -> last timestep is next day 00:00:00 and contains data from day before
@@ -66,8 +66,14 @@ do
         fi
 
         if [[ ${agg_method} = "mean" ]]; then
-            cdo daymean ${name_in} ${name_day}
-            cdo monmean ${name_day} ${name_mon}
+            if [[ ${product_type} != "forecast" ]]; then
+                cdo daymean ${name_in} ${name_day}
+                cdo monmean ${name_day} ${name_mon}
+            else
+                echo "Method is ${agg_method} but product is ${product_type}."
+                cdo daymean ${tmp} ${name_day}
+                cdo monmean ${name_day} ${name_mon}
+            fi
         elif [[ ${agg_method} = "sum" ]]; then
             # variables which are sums over days should be forecast
             if [[ ${product_type} != "forecast" ]]; then
@@ -98,7 +104,7 @@ do
         fi
     done
     # clean up workdir
-    rm ${workdir}/*
+    #rm ${workdir}/*
 done
 
 
