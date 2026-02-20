@@ -8,3 +8,5 @@ test_*.py
 */logfiles/*
 ._*
 *.log
+
+__pycache__/*
