@@ -10,7 +10,7 @@ oldname='var167'
 long_name='2m_temperature'
 startyr=2023
 endyr=2024
-archive=f'/net/atmos/data/ERA5/original/{var}/mon/'
+archive=f'/net/atmos/data/era5_cds/original/{var}/mon/'
 
 if (os.access(archive, os.F_OK) == False):
     os.makedirs(archive)
