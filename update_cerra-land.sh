@@ -18,7 +18,8 @@ syear=2021
 eyear=2025
 
 # forecast variables to be updated
-variable_list=("eva" "perc" "sd" "skt" "slhf" "snom" "sro" "sshf" "ssr" "ssrd" "str" "strd")
+#variable_list=("eva" "perc" "sd" "skt" "slhf" "snom" "sro" "sshf" "ssr" "ssrd" "str" "strd")
+variable_list=("snom")
 
 for VARI in "${variable_list[@]}"
 do
