@@ -50,6 +50,8 @@ def main():
     startyr=int(args.start_year)
     endyr=int(args.end_year)
     archive=f'/net/atmos/data/cerra-land/original/{var}'
+    if (os.access(archive, os.F_OK) == False):
+        os.makedirs(archive)
 
     dataset = "reanalysis-cerra-land"
 
@@ -101,9 +103,9 @@ def main():
             client = cdsapi.Client()
             client.retrieve(dataset, request, f'{filename}.grib')
 
-        #os.system(f'cdo -f nc copy {archive}/{var}_3hr_cerra-land_{year}.grib {archive}/{var}_3hr_cerra-land_{year}.nc')
+        os.system(f'cdo -f nc4 sorttaxis {filename}.grib {filename}.nc')
         #os.system(f'rm {archive}/{var}_3hr_cerra-land_{year}.grib')
-        grib_to_netcdf(f'{filename}.grib', f'{filename}.nc')
+        #grib_to_netcdf(f'{filename}.grib', f'{filename}.nc')
 
 if __name__ == "__main__":
     main()

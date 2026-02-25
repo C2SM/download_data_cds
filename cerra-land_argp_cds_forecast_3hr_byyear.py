@@ -96,8 +96,8 @@ def main():
             client = cdsapi.Client()
             client.retrieve(dataset, request, f'{filename}.grib')
 
-
-        grib_to_netcdf(f'{filename}.grib', f'{filename}.nc', variable_name=var)
+        os.system(f'cdo -f nc4 sorttaxis {filename}.grib {filename}.nc')
+        #grib_to_netcdf(f'{filename}.grib', f'{filename}.nc', variable_name=var)
         #os.system(f'rm {filename}.grib')
 
 if __name__ == "__main__":

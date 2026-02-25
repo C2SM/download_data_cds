@@ -58,6 +58,6 @@ for year in range(startyr, endyr+1):
         },
         f'{archive}/{var}_3hr_cerra-land_{year}.grib')
 
-    #os.system(f'cdo -f nc copy {archive}/{var}_3hr_cerra-land_{year}.grib {archive}/{var}_3hr_cerra-land_{year}.nc')
+    os.system(f'cdo -f nc4 sorttaxis {archive}/{var}_3hr_cerra-land_{year}.grib {archive}/{var}_3hr_cerra-land_{year}.nc')
     #os.system(f'rm {archive}/{var}_3hr_cerra-land_{year}.grib')
-    grib_to_netcdf(f'{archive}/{var}_3hr_cerra-land_{year}.grib', f'{archive}/{var}_3hr_cerra-land_{year}.nc')
+    #grib_to_netcdf(f'{archive}/{var}_3hr_cerra-land_{year}.grib', f'{archive}/{var}_3hr_cerra-land_{year}.nc')

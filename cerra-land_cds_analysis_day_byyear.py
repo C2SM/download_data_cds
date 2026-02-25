@@ -37,7 +37,7 @@ for year in range(startyr, endyr+1):
                 '13', '14', '15',
                 '16', '17', '18',
                 '19', '20', '21',
-                '22', '23', '24',o
+                '22', '23', '24',
                 '25', '26', '27',
                 '28', '29', '30',
                 '31',
@@ -46,5 +46,5 @@ for year in range(startyr, endyr+1):
         },
         f'{archive}/{var}_day_cerra-land_{year}.grib')
 
-    os.system(f'cdo -f nc copy {archive}/{var}_day_cerra-land_{year}.grib {archive}/{var}_day_cerra-land_{year}.nc')
-    os.system(f'rm {archive}/{var}_day_cerra-land_{year}.grib')
+    os.system(f'cdo -f nc4 sorttaxis {archive}/{var}_day_cerra-land_{year}.grib {archive}/{var}_day_cerra-land_{year}.nc')
+    #os.system(f'rm {archive}/{var}_day_cerra-land_{year}.grib')

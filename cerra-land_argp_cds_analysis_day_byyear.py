@@ -36,6 +36,13 @@ def main():
         required=True,
     )
 
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        help="Whether to overwrite existing files (default: False)",
+        action="store_true",
+    )
+
     args = parser.parse_args()
 
 
@@ -88,9 +95,9 @@ def main():
 
         target_nc = os.path.isfile(f'{filename}.nc')
         if not target_nc or args.overwrite:
-            #os.system(f'cdo -f nc copy {archive}/{var}_day_cerra-land_{year}.grib {archive}/{var}_day_cerra-land_{year}.nc')
+            os.system(f'cdo -f nc4 sorttaxis {filename}.grib {filename}.nc')
             #os.system(f'rm {archive}/{var}_day_cerra-land_{year}.grib')
-            grib_to_netcdf(f'{filename}.grib', f'{filename}.nc', variable_name=var)
+            #grib_to_netcdf(f'{filename}.grib', f'{filename}.nc', variable_name=var)
 
 if __name__ == "__main__":
     main()
