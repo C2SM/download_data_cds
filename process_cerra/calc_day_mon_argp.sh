@@ -37,13 +37,13 @@ fi
 DATA_JSON=$(jq -r --arg KEY "$SHORT_NAME" '.[$KEY] | @tsv' CERRA_variables.json)
 
 # Check if the key exists in the JSON
-if [ "$DATA_JSON" == "null" ]; then
+if [ "$DATA_JSON" == "null" ] || [ -z "$DATA_JSON" ]; then
     echo "Error: ShortName '$SHORT_NAME' not found in CERRA_variables.json"
     exit 1
 fi
 
-# 3. Map the TSV (Tab Separated Values) into an array
-read -ra PARAMS <<< "$DATA_JSON"
+# Map the TSV into an array using ONLY a tab as the delimiter
+IFS=$'\t' read -ra PARAMS <<< "$DATA_JSON"
 
 # 4. Assign to named variables for clarity
 VAR_NAME=${PARAMS[0]}
@@ -109,7 +109,7 @@ do
         name_mon=${outdir}/${VARI}/mon/native/${VARI}_mon_${agg_method}_${data}_${YEAR}.nc
         tmp=${workdir}/tmpfile_${YEAR}.nc
 
-        if [[ ${product_type} = "forecast" ]]; then
+        if [[ ${product_type} == "forecast" ]]; then
             # -> last timestep is next day 00:00:00 and contains data from day before
             # at end of the year the first timestep from the next year is already included in each file
             cdo shifttime,-1hour ${name_in} ${tmp}
@@ -118,7 +118,7 @@ do
             cp ${name_in} ${tmp}
         fi
 
-        if [[ ${agg_method} = "mean" ]]; then
+        if [[ ${agg_method} == "mean" ]]; then
             if [[ ${product_type} != "forecast" ]]; then
                 cdo daymean ${name_in} ${name_day}
                 cdo monmean ${name_day} ${name_mon}
@@ -127,7 +127,7 @@ do
                 cdo daymean ${tmp} ${name_day}
                 cdo monmean ${name_day} ${name_mon}
             fi
-        elif [[ ${agg_method} = "sum" ]]; then
+        elif [[ ${agg_method} == "sum" ]]; then
             # variables which are sums over days should be forecast
             if [[ ${product_type} != "forecast" ]]; then
                 echo "Method is ${agg_method} but product is ${product_type}."
@@ -136,7 +136,7 @@ do
             fi
             cdo daysum ${tmp} ${name_day}
             cdo monsum ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "max" ]]; then
+        elif [[ ${agg_method} == "max" ]]; then
             # variables which are max over days should be forecast
             if [[ ${product_type} != "forecast" ]]; then
                 echo "Method is ${agg_method} but product is ${product_type}."
@@ -145,7 +145,7 @@ do
             fi
             cdo daymax ${tmp} ${name_day}
             cdo monmax ${name_day} ${name_mon}
-        elif [[ ${agg_method} = "min" ]]; then
+        elif [[ ${agg_method} == "min" ]]; then
             # variables which are min over days should be forecast
             if [[ ${product_type} != "forecast" ]]; then
                 echo "Method is ${agg_method} but product is ${product_type}."
