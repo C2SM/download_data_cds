@@ -2,7 +2,6 @@ import os
 import cdsapi
 import argparse
 
-from convert_grib_netcdf import grib_to_netcdf
 from functions.file_util import read_cerra_info
 
 

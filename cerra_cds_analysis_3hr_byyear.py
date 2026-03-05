@@ -3,27 +3,65 @@
 import os
 import cdsapi
 from pathlib import Path
+import argparse
 
-from convert_grib_netcdf import grib_to_netcdf
+from functions.file_util import read_cerra_info
 
 
 def main():
-    var='msl'
-    long_name='mean_sea_level_pressure'
-    startyr=1986
-    endyr=2024
+    # -------------------------------------------------
+    # Parse command line input
+    # -------------------------------------------------
+    parser = argparse.ArgumentParser(
+        description="Download CERRA data from the CDS API and convert from GRIB to NetCDF format."
+    )
+    parser.add_argument(
+        "-v",
+        "--variable",
+        help="Name of the variable to download and process",
+        required=True,
+    )
+
+    parser.add_argument(
+        "-start",
+        "--start_year",
+        help="Start year for data download (inclusive)",
+        required=True,
+    )
+
+    parser.add_argument(
+        "-end",
+        "--end_year",
+        help="End year for data download (inclusive)",
+        required=True,
+    )
+    parser.add_argument(
+        "-o",
+        "--overwrite",
+        help="Whether to overwrite existing files (default: False)",
+        action="store_true",
+    )
+
+    args = parser.parse_args()
+
+
+    var=args.variable
+    cerra_info = read_cerra_info(var)
+    long_name = cerra_info['long_name']
+    startyr=int(args.start_year)
+    endyr=int(args.end_year)
     archive=f'/net/atmos/data/cerra/original/{var}/work'
 
     if (os.access(archive, os.F_OK) == False):
         os.makedirs(archive)
 
+    dataset = "reanalysis-cerra-single-levels"
+
     for year in range(startyr, endyr+1):
         grib_file = f'{archive}/{var}_3hr_cerra_{year}.grib'
         ncfile = f'{archive}/{var}_3hr_cerra_{year}.nc'
 
-
         if not Path(grib_file).is_file():
-            dataset = "reanalysis-cerra-single-levels"
             request = {
                 "variable": [f'{long_name}'],
                 "level_type": "surface_or_atmosphere",
@@ -62,9 +100,9 @@ def main():
         else:
             print('grib_file already exists')
 
-        grib_to_netcdf(grib_file, ncfile)
-        #os.system(f'cdo -f nc copy {grib_file} {ncfile}')
-        #os.system(f'rm {grib_file}')
+        if not Path(ncfile).is_file() or args.overwrite:
+            os.system(f'cdo -f nc4 sorttaxis {grib_file} {ncfile}')
+            #os.system(f'rm {grib_file}')
 
 if __name__ == "__main__":
     main()

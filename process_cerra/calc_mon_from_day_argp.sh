@@ -14,7 +14,6 @@ logfile="calc_mon_$date.log"
 ## load required modules ##
 ##-----------------------##
 module load netcdf
-module load nco/4.5.3
 module load cdo
 
 ##-----------------------##
@@ -45,7 +44,7 @@ archive=/net/atmos/data/${data}
 version=v1
 
 outdir=${archive}/processed/${version}
-
+#outdir=/net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/${version}
 
 for VARI in $variable
 do

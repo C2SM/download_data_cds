@@ -1,0 +1,30 @@
+---
+dataset:
+  name: CERRA-Land
+  store: cds
+
+variables:
+  varname: sd
+  freq: 3hr
+  product: forecast
+
+paths:
+  origin: reanalysis-cerra-land
+  download: /net/atmos/data/cerra-land/original/
+  #work: /net/atmos/data/cerra-land/processed/v1/work
+  #proc: /net/atmos/data/cerra-land/processed/v1/
+  work: /net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/v1/work
+  proc: /net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/v1
+
+time:
+  startyr: 2001
+  endyr: 2002
+
+chunking:
+  time_chk: 1
+  lat_chk: 32
+  lon_chk: 32
+
+flags:
+  overwrite: False
+

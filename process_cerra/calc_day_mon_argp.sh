@@ -74,11 +74,11 @@ agg_method=$AGG
 # because time "date 00:00:00" contains forecast data of "day before 21:00:00 to 24:00:00"
 if [[ $data == "cerra-land" ]] && [[ $variable != "tp" ]]; then
     product_type="forecast"
-elif [[ $AN == "True" ]] && [[ $FC == "False" ]]; then
+elif [[ $AN == 1 ]] && [[ $FC == 0 ]]; then
     product_type="analysis"
-elif [[ $AN == "True" ]] && [[ $FC == "True" ]]; then
+elif [[ $AN == 1 ]] && [[ $FC == 1 ]]; then
     product_type="analysis"
-elif [[ $AN == "False" ]] && [[ $FC == "True" ]]; then
+elif [[ $AN == 0 ]] && [[ $FC == 1 ]]; then
     product_type="forecast"
 else
     echo "Error: Invalid combination of Analysis and Forecast flags."
@@ -88,8 +88,8 @@ fi
 archive=/net/atmos/data/${data}
 version=v1
 
-#outdir=${archive}/processed/${version}
-outdir=/net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/${version}
+outdir=${archive}/processed/${version}
+#outdir=/net/dust/c2sm-data/rlorenz/cerra-land_cds/processed/${version}
 
 for VARI in $variable
 do
@@ -157,7 +157,7 @@ do
         fi
     done
     # clean up workdir
-    #rm ${workdir}/*
+    rm ${workdir}/*
 done
 
 
